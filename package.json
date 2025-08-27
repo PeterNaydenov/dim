@@ -2,6 +2,10 @@
   "name": "@peter.naydenov/dim",
   "version": "0.0.0",
   "type": "module",
+  "license": "MIT",
+  "repository": "https://github.com/peter-naydenov/dim.git",
+  "description": "Invisible Markers in the DOM",
+  "main": "src/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
