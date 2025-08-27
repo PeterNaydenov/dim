@@ -38,7 +38,7 @@ function rangeBuilder () {
                             start = document.createTextNode ('')
                           , end   = document.createTextNode ('')
                           ;
-                      fn ( {start, end}, ...args )
+                      fn ( {start, end}, ...args )   // Apply start and end makers to the DOM
                       const range = document.createRange ()
                       range.setStartAfter ( start )
                       range.setEndBefore ( end )
