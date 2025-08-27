@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/demo.js"></script>
+    <script type="module">
+          import rangeBuilder  from '/src/main.js'
+          
+          let counter = 0;
+          const render = ( counter ) => {
+            return `<p>My List is here:</p> 
+                      <ul>
+                          <li>${counter}</li>
+                          <li>${counter+1}</li>
+                          <li>${counter+2}</li>
+                      </ul>`
+              }   // render func.
+          
+
+          let ranger = rangeBuilder ();
+
+ 
+          
+
+          function setupCounter ( element, ranger ) {
+                      const setCounter = (count) => {
+                                              counter = count
+                                              element.innerHTML = `count is ${counter}`
+                                              let logos = ranger.get ( 'logos' )
+                                              if ( counter > 0 )   logos.update ( render ( counter) )
+                                          }
+                      element.addEventListener('click', () => setCounter(counter + 1))
+                      setCounter(0)
+              } // setupCounter func.
+          
+
+
+          ranger.set ( 'logos', ({start,end}) => {
+                    let content = document.querySelector ( '#app div' )
+                    let title = document.querySelector ( '#app h1' )
+                    // Put the start and end markers in the DOM
+                    content?.prepend ( start )
+                    title?.before ( end )
+                })
+          
+          let logos = ranger.get ( 'logos' );
+          logos.update ( `initial: ${render(0)}` )
+          
+          // logos?.prepend ( 'Hello World' )
+          // logos?.append ( 'Hello World' )
+          // ranger.get ( 'logos' )?.delete ()
+          // console.log ( logos?.isEmpty ())
+          setupCounter ( document.querySelector('#counter'), ranger )
+    </script>
+  </body>
+</html>
