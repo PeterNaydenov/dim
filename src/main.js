@@ -31,7 +31,7 @@ function makeMyAPI ( range, start, end ) {
 
 
 
-function rangeBuilder () {
+function dim () {
         let ranges = {};
         function set  ( name, fn, ...args ) {
                       let 
@@ -58,10 +58,10 @@ function rangeBuilder () {
             , get
             , reset
         }
-} // rangeBuilder func.
+} // dim func.
 
 
 
-export default rangeBuilder
+export default dim
 
 
