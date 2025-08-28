@@ -33,7 +33,7 @@
                                               counter = count
                                               element.innerHTML = `count is ${counter}`
                                               let logos = ranger.get ( 'logos' )
-                                              if ( counter > 0 )   logos.update ( render ( counter) )
+                                              if ( counter > 0 )   logos.update ( render ( counter), 'cache' ) // using cache for this update. Can be reversed by calling logos.back ()
                                           }
                       element.addEventListener('click', () => setCounter(counter + 1))
                       setCounter(0)
@@ -51,7 +51,9 @@
                 })
           
           let logos = ranger.get ( 'logos' );
-          logos.update ( `initial: ${render(0)}` )
+          logos.update ( `initial: ${render(0)}` ) // no cache example
+
+          window.logos = logos // Visible in the console. Testing the cache API
           
           // logos?.prepend ( 'Hello World' )
           // logos?.append ( 'Hello World' )

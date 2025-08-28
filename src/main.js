@@ -8,14 +8,23 @@ function _convertToDOM ( code ) {
 
 
 function makeMyAPI ( range, start, end ) {
+    let cache = []
     return {
-              update ( code ) {
+              update ( code, keepCache = '' ) {
+                            if ( keepCache === 'cache' )   cache.push ( range.cloneContents() )
                             range.deleteContents ()
                             range.insertNode ( _convertToDOM ( code ) )
                   }
+              , back () {
+                            let content = cache.pop ()
+                            if ( content ) {  
+                                    range.deleteContents ()
+                                    range.insertNode ( content )
+                                }
+                    }
               , delete () {
                             range.deleteContents ()
-                  }
+                    }
               , prepend ( code ) {
                           start.after ( _convertToDOM ( code ) )
                   }
