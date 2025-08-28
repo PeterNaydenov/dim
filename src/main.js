@@ -33,8 +33,8 @@ function makeMyAPI ( range, start, end ) {
 
 function dim () {
         let 
-              ranges  = {}
-            , aliases = {}
+              ranges  = {} // Numeric ranges - always added
+            , aliases = {} // Named ranges - added only if set function returns name
             ;
         function set  ( fn, ...args ) {
                       let 
@@ -47,7 +47,7 @@ function dim () {
                       range.setEndBefore ( end )
                       let rangeAPI = makeMyAPI ( range, start, end )
                       if ( name )   aliases[name] = rangeAPI
-                      let num = Object.keys ( ranges ).length
+                      let num = Object.keys ( ranges ).length;
                       ranges[num] = rangeAPI
               } // set func.
         function get ( name ) {
