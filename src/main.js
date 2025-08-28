@@ -15,6 +15,9 @@ function makeMyAPI ( range, start, end ) {
                             range.deleteContents ()
                             range.insertNode ( _convertToDOM ( code ) )
                   }
+              , getContext () {
+                            return range.commonAncestorContainer
+                    }
               , back () {
                             let content = cache.pop ()
                             if ( content ) {  
