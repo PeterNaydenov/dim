@@ -8,25 +8,23 @@ function _convertToDOM ( code ) {
 
 
 function makeMyAPI ( range, start, end ) {
-    let cache = []
+    let cache = [];
     return {
               update ( code, keepCache = '' ) {
                             if ( keepCache === 'cache' )   cache.push ( range.cloneContents() )
                             range.deleteContents ()
                             range.insertNode ( _convertToDOM ( code ) )
                   }
-              , getContext () {
-                            return range.commonAncestorContainer
-                    }
+              , clearCache : () => { cache = [] }
+              , delete     : () => { range.deleteContents () }
+              , getContext : () => range.commonAncestorContainer
+              , isEmpty    : () => range.collapsed   // Space between start and end should be empty
               , back () {
                             let content = cache.pop ()
                             if ( content ) {  
                                     range.deleteContents ()
                                     range.insertNode ( content )
                                 }
-                    }
-              , delete () {
-                            range.deleteContents ()
                     }
               , prepend ( code, keepCache = '' ) {
                           if ( keepCache === 'cache' )   cache.push ( range.cloneContents() )
@@ -36,9 +34,6 @@ function makeMyAPI ( range, start, end ) {
                           if ( keepCache === 'cache' )   cache.push ( range.cloneContents() )
                           end.before ( _convertToDOM ( code ) )
                   }
-              , isEmpty () {  // Space between start and end should be empty
-                          return range.collapsed   
-                      }
 }} // makeMyAPI func.
 
 
