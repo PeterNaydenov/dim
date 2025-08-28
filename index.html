@@ -41,12 +41,13 @@
           
 
 
-          ranger.set ( 'logos', ({start,end}) => {
+          ranger.set ( ({start,end}) => {
                     let content = document.querySelector ( '#app div' )
                     let title = document.querySelector ( '#app h1' )
                     // Put the start and end markers in the DOM
                     content?.prepend ( start )
                     title?.before ( end )
+                    return 'logos'
                 })
           
           let logos = ranger.get ( 'logos' );
