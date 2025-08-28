@@ -32,7 +32,10 @@ function makeMyAPI ( range, start, end ) {
 
 
 function dim () {
-        let ranges = {};
+        let 
+              ranges  = {}
+            , aliases = {}
+            ;
         function set  ( fn, ...args ) {
                       let 
                             start = document.createTextNode ('')
@@ -43,19 +46,18 @@ function dim () {
                       range.setStartAfter ( start )
                       range.setEndBefore ( end )
                       let rangeAPI = makeMyAPI ( range, start, end )
-                      if ( name )   ranges[name] = rangeAPI
-                      else {
-                            name = Object.keys ( ranges ).length
-                            ranges[name] = rangeAPI
-                        }
+                      if ( name )   aliases[name] = rangeAPI
+                      let num = Object.keys ( ranges ).length
+                      ranges[num] = rangeAPI
               } // set func.
         function get ( name ) {
                     if ( name.includes(',') )   name = name.split ( ',').map ( n => n.trim() )
-                    return (name instanceof Array) ? name.map ( n => ranges[n]) : ranges[name]
+                    return (name instanceof Array) ? name.map ( n => aliases[n] || ranges[n] ) : aliases[name] || ranges[name]
               } // get func.
         function reset () {
                   ranges = {}
-              }
+                  aliases = {}
+            }
 
   return {
               set
