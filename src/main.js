@@ -25,10 +25,12 @@ function makeMyAPI ( range, start, end ) {
               , delete () {
                             range.deleteContents ()
                     }
-              , prepend ( code ) {
+              , prepend ( code, keepCache = '' ) {
+                          if ( keepCache === 'cache' )   cache.push ( range.cloneContents() )
                           start.after ( _convertToDOM ( code ) )
                   }
-              , append ( code ) {
+              , append ( code, keepCache = '' ) {
+                          if ( keepCache === 'cache' )   cache.push ( range.cloneContents() )
                           end.before ( _convertToDOM ( code ) )
                   }
               , isEmpty () {  // Space between start and end should be empty
