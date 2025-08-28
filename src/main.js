@@ -33,17 +33,21 @@ function makeMyAPI ( range, start, end ) {
 
 function dim () {
         let ranges = {};
-        function set  ( name, fn, ...args ) {
+        function set  ( fn, ...args ) {
                       let 
                             start = document.createTextNode ('')
                           , end   = document.createTextNode ('')
                           ;
-                      fn ( {start, end}, ...args )   // Apply start and end makers to the DOM
+                      let name = fn ( {start, end}, ...args )   // Apply start and end makers to the DOM
                       const range = document.createRange ()
                       range.setStartAfter ( start )
                       range.setEndBefore ( end )
                       let rangeAPI = makeMyAPI ( range, start, end )
-                      ranges[name] = rangeAPI
+                      if ( name )   ranges[name] = rangeAPI
+                      else {
+                            name = Object.keys ( ranges ).length
+                            ranges[name] = rangeAPI
+                        }
               } // set func.
         function get ( name ) {
                     if ( name.includes(',') )   name = name.split ( ',').map ( n => n.trim() )
