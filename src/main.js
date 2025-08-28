@@ -14,11 +14,14 @@ function makeMyAPI ( range, start, end ) {
                             if ( keepCache === 'cache' )   cache.push ( range.cloneContents() )
                             range.deleteContents ()
                             range.insertNode ( _convertToDOM ( code ) )
-                  }
+                    }
               , clearCache : () => { cache = [] }
-              , delete     : () => { range.deleteContents () }
               , getContext : () => range.commonAncestorContainer
               , isEmpty    : () => range.collapsed   // Space between start and end should be empty
+              , delete     : ( keepCache = '' ) => { 
+                                if ( keepCache === 'cache' )   cache.push ( range.cloneContents() )
+                                range.deleteContents ()
+                    }
               , back () {
                             let content = cache.pop ()
                             if ( content ) {  
