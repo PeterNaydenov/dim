@@ -35,6 +35,8 @@ ranges.set ( ( {start, end} ) => { // Set first range in the storage.
 })
 
 const app = ranges.get ( 'app' ) // Get the range by name
+// there is options to get multiple ranges in single line if ranges exist:
+const [logos, counter] = ranges.get ( 'logos,counter' )
 
 app.update ( 'Hello World' ) // Update the range content
 app.update ( 'Hello World 2', 'cache' ) // Update the range content and cache the previous content
