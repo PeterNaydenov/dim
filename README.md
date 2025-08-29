@@ -41,6 +41,7 @@ const [logos, counter] = ranges.get ( 'logos,counter' )
 app.update ( 'Hello World' ) // Update the range content
 app.update ( 'Hello World 2', 'cache' ) // Update the range content and cache the previous content
 app.back () // Go back to the previous content
+// Content now is: 'Hello World'
 
 app.delete () // Delete the range content. If 'cache' is passed, the content will be cached before deleting it
 
