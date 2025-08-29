@@ -27,7 +27,7 @@ ranges.set ( ( {start, end} ) => { // Set first range in the storage.
         // Note: Start and end are invisible markers.
         // Insert the start and end markers in the DOM
         let container = document.querySelector ( '#app' )
-        container?.prepend ( start )
+        container?.prepend ( start )   // Using '?.' prevents errors if the container is not found
         container?.append ( end )
         // App container is set as a first range.
         // Function 'set' should return the name of range. 
