@@ -6,7 +6,16 @@
   "author": "Peter Naydenov",
   "repository": "https://github.com/peter-naydenov/dim.git",
   "description": "Invisible Markers in the DOM",
-  "main": "src/main.js",
+  "main": "dist/dim.cjs",
+  "module": "dist/dim.js",
+  "types": "dist/dim.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/dim.js",
+      "require": "./dist/dim.cjs"
+    },
+    "./umd": "./dist/dim.umd.cjs"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -18,6 +27,7 @@
     "@vitest/coverage-v8": "^4.1.5",
     "jsdom": "^29.0.2",
     "vite": "^8.0.9",
+    "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.1.5"
   }
 }
