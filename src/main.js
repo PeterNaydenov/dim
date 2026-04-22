@@ -12,38 +12,6 @@
 /**
  * Creates invisible markers in the DOM to define ranges, allowing content insertion and manipulation.
  * @returns {Object} The dim API with set, get, and reset methods
- * @example
- * import dim from '@peter.naydenov/dim';
- *
- * const d = dim();
- *
- * // Create a range with markers
- * d.set(({ start, end }) => {
- *   const wrapper = document.createElement('div');
- *   wrapper.id = 'content';
- *   wrapper.appendChild(start);
- *   wrapper.appendChild(end);
- *   document.body.appendChild(wrapper);
- * }, someArg);
- *
- * // Get the range by numeric index
- * const range = d.get('0');
- *
- * // Insert content
- * range.update('<p>Hello World</p>');
- *
- * // Or by alias
- * d.set(({ start, end }) => {
- *   const el = document.createElement('span');
- *   el.appendChild(start);
- *   el.appendChild(end);
- *   document.body.appendChild(el);
- *   return 'myRange';
- * });
- *
- * const myRange = d.get('myRange');
- * myRange.prepend('<b>Before</b>');
- * myRange.append('<i>After</i>');
  */
 function dim () {
         let 
