@@ -16,14 +16,6 @@ describe ( 'Dim - DOM Invisible Markers', () => {
     })
 
 
-    it ('should create a button element', () => {
-        const button = document.createElement('button')
-        button.textContent = 'Click me'
-        document.body.appendChild(button)
-        expect(document.querySelector('button')?.textContent).toBe('Click me')
-    })
-
-
     describe ( 'dim().set()', () => {
 
         it ( 'should create a range with numeric index as string', () => {
