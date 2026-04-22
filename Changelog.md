@@ -1,6 +1,11 @@
 # Release History
 
 
+### 0.0.2 ( 2025-04-22 )
+- [x] Extended testing;
+- [x] Types building;
+
+
 
 ### 0.0.1 ( 2025-08-29 )
 - [x] Documentation added;
