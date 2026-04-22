@@ -1,9 +1,13 @@
 /**
- * @fileoverview DOM Invisible Markers (dim) - A lightweight library for creating and managing invisible markers in the DOM
- * @author Peter Naydenov
- * @version 0.0.1
- * @license MIT
+  DOM Invisible Markers (dim) 
+  ==========================
+  A lightweight library for creating and managing invisible markers in the DOM
+
+  History notes:
+      - Created on 2025-08-27;
  */
+
+
 
 /**
  * Creates invisible markers in the DOM to define ranges, allowing content insertion and manipulation.
