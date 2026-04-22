@@ -16,31 +16,34 @@ describe ( 'Dim - DOM Invisible Markers', () => {
     })
 
 
-    describe ( 'dim().set()', () => {
+    describe ( 'Set a range', () => {
 
-        it ( 'should create a range with numeric index as string', () => {
+        it ( 'Create a range with numeric index as string', () => {
             d.set(({ start, end }) => {
+                // Create a range inside the body
                 document.body.appendChild(start)
                 document.body.appendChild(end)
             })
-            const r = d.get('0')
-            expect(r).toBeDefined()
-            expect(r.isEmpty()).toBe(true)
-        })
+            const r = d.get ('0');
+            expect ( r ).toBeDefined ()          // Range exists
+            expect ( r.isEmpty() ).toBe ( true ) // Range is empty
+        }) // it Create a range with numeric index as string
 
 
-        it ( 'should create a range with alias name', () => {
-            d.set(({ start, end }) => {
-                document.body.appendChild(start)
-                document.body.appendChild(end)
-                return 'myRange'
-            })
-            const r = d.get('myRange')
-            expect(r).toBeDefined()
-        })
+
+        it ( 'Create a range with alias name', () => {
+                d.set(({ start, end }) => {
+                    document.body.appendChild(start)
+                    document.body.appendChild(end)
+                    return 'myRange'
+                })
+                const r = d.get ( 'myRange' )
+                expect ( r ).toBeDefined ()
+        }) // it Create a range with alias name
 
 
-        it ( 'should create multiple ranges with string numeric indexes', () => {
+
+        it ( 'Create multiple ranges with string numeric indexes', () => {
             d.set(({ start, end }) => {
                 const wrapper = document.createElement('div')
                 wrapper.appendChild(start)
@@ -61,18 +64,21 @@ describe ( 'Dim - DOM Invisible Markers', () => {
     })
 
 
-    describe ( 'dim().get()', () => {
 
-        it ( 'should retrieve range by string numeric index', () => {
+
+
+    describe ( 'Get a range', () => {
+
+        it ( 'Range by string numeric index', () => {
             d.set(({ start, end }) => {
-                document.body.appendChild(start)
-                document.body.appendChild(end)
-            })
-            expect(d.get('0')).toBeDefined()
+                    document.body.appendChild(start)
+                    document.body.appendChild(end)
+                })
+            expect ( d.get('0') ).toBeDefined()
         })
 
 
-        it ( 'should retrieve range by alias name', () => {
+        it ( 'Range by alias name', () => {
             d.set(({ start, end }) => {
                 document.body.appendChild(start)
                 document.body.appendChild(end)
@@ -82,7 +88,7 @@ describe ( 'Dim - DOM Invisible Markers', () => {
         })
 
 
-        it ( 'should retrieve multiple ranges by comma-separated names', () => {
+        it ( 'Multiple ranges by comma-separated names', () => {
             d.set(({ start, end }) => {
                 document.body.appendChild(start)
                 document.body.appendChild(end)
@@ -102,7 +108,7 @@ describe ( 'Dim - DOM Invisible Markers', () => {
         })
 
 
-        it ( 'should retrieve multiple ranges by array of names', () => {
+        it ( 'Mmultiple ranges by array of names', () => {
             d.set(({ start, end }) => {
                 document.body.appendChild(start)
                 document.body.appendChild(end)
@@ -123,7 +129,7 @@ describe ( 'Dim - DOM Invisible Markers', () => {
         })
 
 
-        it ( 'should return undefined for non-existent range', () => {
+        it ( 'Return undefined for non-existent range', () => {
             d.set(({ start, end }) => {
                 document.body.appendChild(start)
                 document.body.appendChild(end)
@@ -134,9 +140,10 @@ describe ( 'Dim - DOM Invisible Markers', () => {
     })
 
 
-    describe ( 'dim().reset()', () => {
 
-        it ( 'should clear all ranges and aliases', () => {
+    describe ( 'Reset', () => {
+
+        it ( 'Clear all ranges and aliases', () => {
             d.set(({ start, end }) => {
                 document.body.appendChild(start)
                 document.body.appendChild(end)
@@ -155,9 +162,12 @@ describe ( 'Dim - DOM Invisible Markers', () => {
             expect(d.get('named')).toBeUndefined()
         })
 
-    })
+    }) // describe Reset
 
 
+
+
+    
     describe ( 'Range API - update()', () => {
 
         it ( 'should insert HTML content into range', () => {
