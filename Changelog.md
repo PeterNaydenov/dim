@@ -1,6 +1,12 @@
 # Release History
 
 
+
+### 0.1.0 ( 2025-04-23 )
+- [x] Orphan range detection in case of nested ranges;
+
+
+
 ### 0.0.3 ( 2025-04-22 )
 - [x] Extended testing;
 - [x] Types building;
