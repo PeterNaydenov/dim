@@ -104,6 +104,22 @@ function _convertToDOM ( code ) {
  */
 function makeMyAPI ( range, start, end ) {
     let cache = [];
+
+    /**
+     * Validates that the range markers are still connected to the DOM.
+     * When a parent range updates its content, nested range markers get deleted from the DOM.
+     * This function checks if the markers still exist in the document tree.
+     * @private
+     * @returns {boolean} True if markers are connected, false if removed from DOM
+     */
+    function validate () {
+            if ( !start.isConnected || !end.isConnected ) {
+                    console.warn ( 'Warning: Current range is not available in the DOM at this time' )
+                    return false
+                }
+            return true
+        } // validate func.
+
     return {
         /**
          * Updates the content within the range.
@@ -115,6 +131,7 @@ function makeMyAPI ( range, start, end ) {
          * range.update('<p>New content</p>', 'cache'); // Save old to cache
          */
         update ( code, keepCache = '' ) {
+            if ( !validate () )   return
             if ( keepCache === 'cache' )   cache.push ( range.cloneContents() )
             range.deleteContents ()
             range.insertNode ( _convertToDOM ( code ) )
@@ -130,21 +147,28 @@ function makeMyAPI ( range, start, end ) {
 
         /**
          * Gets the common ancestor container of the range.
-         * @returns {Node} The ancestor DOM node
+         * @returns {Node|null} The ancestor DOM node, or null if markers are orphaned
          * @example
          * const ctx = range.getContext();
+         * if (!ctx) console.error('Range is orphaned');
          */
-        getContext : () => range.commonAncestorContainer,
+        getContext : () => {
+                if ( !validate () )   return null
+                return range.commonAncestorContainer
+            },
 
         /**
-         * Checks if the range is empty (collapsed).
-         * @returns {boolean} True if range has no content
+         * Checks if the range is empty (collapsed) or orphaned.
+         * @returns {boolean} True if range is empty or markers are orphaned
          * @example
          * if (range.isEmpty()) {
-         *   // Range is empty
+         *   // Range is empty or orphaned
          * }
          */
-        isEmpty    : () => range.collapsed,
+        isEmpty    : () => {
+                if ( !validate () )   return true
+                return range.collapsed
+            },
 
         /**
          * Deletes all content within the range.
@@ -154,7 +178,8 @@ function makeMyAPI ( range, start, end ) {
          * range.delete();
          * range.delete('cache'); // Save to cache first
          */
-        delete     : ( keepCache = '' ) => { 
+        delete     : ( keepCache = '' ) => {
+            if ( !validate () )   return
             if ( keepCache === 'cache' )   cache.push ( range.cloneContents() )
             range.deleteContents ()
         },
@@ -166,6 +191,7 @@ function makeMyAPI ( range, start, end ) {
          * range.back(); // Restores previous content
          */
         back () {
+            if ( !validate () )   return
             let content = cache.pop ()
             if ( content ) {  
                 range.deleteContents ()
@@ -182,6 +208,7 @@ function makeMyAPI ( range, start, end ) {
          * range.prepend('<b>Before</b>');
          */
         prepend ( code, keepCache = '' ) {
+            if ( !validate () )   return
             if ( keepCache === 'cache' )   cache.push ( range.cloneContents() )
             start.after ( _convertToDOM ( code ) )
         },
@@ -195,6 +222,7 @@ function makeMyAPI ( range, start, end ) {
          * range.append('<i>After</i>');
          */
         append ( code, keepCache = '' ) {
+            if ( !validate () )   return
             if ( keepCache === 'cache' )   cache.push ( range.cloneContents() )
             end.before ( _convertToDOM ( code ) )
         }
