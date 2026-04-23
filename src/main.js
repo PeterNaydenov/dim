@@ -121,7 +121,7 @@ function makeMyAPI ( range, start, end ) {
         } // validate func.
 
     return {
-        /**
+/**
          * Updates the content within the range.
          * @param {string} code - HTML string to insert
          * @param {string} [keepCache=''] - If 'cache', preserves current content in cache for undo
