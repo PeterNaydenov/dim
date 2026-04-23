@@ -514,4 +514,35 @@ describe ( 'Dim - DOM Invisible Markers', () => {
     })
 
 
+    describe ( 'Orphan range detection', () => {
+
+        it ( 'isEmpty() should return true when child range is orphaned', () => {
+            d.set(({ start, end }) => {
+                const parent = document.createElement('div')
+                parent.id = 'parent'
+                parent.appendChild(start)
+                parent.appendChild(end)
+                document.body.appendChild(parent)
+            })
+
+            d.set(({ start, end }) => {
+                const container = document.getElementById('parent')
+                container.appendChild(start)
+                container.appendChild(end)
+                return 'child'
+            })
+
+            const parentRange = d.get('0')
+            const childRange = d.get('child')
+
+            expect(childRange.isEmpty()).toBe(true)
+
+            parentRange.update('')
+            expect(childRange.isEmpty()).toBe(true)
+        })
+
+
+    })
+
+
 }) // describe
