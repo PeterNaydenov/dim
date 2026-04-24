@@ -2,8 +2,9 @@
 
 
 
-### 0.1.0 ( 2025-04-23 )
+### 0.1.0 ( 2025-04-24 )
 - [x] Orphan range detection in case of nested ranges;
+- [x] All range operations (update, delete, prepend, append, back, isEmpty, getContext) now validate before executing;
 
 
 
