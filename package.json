@@ -24,10 +24,10 @@
     "cover": "vitest run --coverage"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/coverage-v8": "^4.1.6",
     "jsdom": "^29.1.1",
     "vite": "^8.0.11",
     "vite-plugin-dts": "^5.0.0",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.6"
   }
 }
