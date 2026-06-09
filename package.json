@@ -29,5 +29,8 @@
     "vite": "^8.0.14",
     "vite-plugin-dts": "^5.0.1",
     "vitest": "^4.1.8"
+  },
+  "allowScripts": {
+    "fsevents@2.3.3": true
   }
 }
