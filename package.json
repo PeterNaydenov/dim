@@ -24,11 +24,11 @@
     "cover": "vitest run --coverage"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^4.1.8",
+    "@vitest/coverage-v8": "^4.1.9",
     "jsdom": "^29.1.1",
     "vite": "^8.0.16",
     "vite-plugin-dts": "^5.0.2",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.9"
   },
   "allowScripts": {
     "fsevents@2.3.3": true
