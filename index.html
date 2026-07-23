@@ -2,64 +2,57 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
+    <title>dim demo</title>
+    <style>
+      body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 40rem; margin: 0 auto; color: #1f2937; }
+      h1 { margin-top: 0; }
+      .counter { display: flex; gap: 1rem; align-items: baseline; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 6px; background: #fafafa; }
+      button { padding: 0.4rem 0.9rem; cursor: pointer; }
+      .hint { color: #6b7280; font-size: 0.9em; }
+      kbd { padding: 1px 5px; border: 1px solid #d1d5db; border-radius: 3px; font-family: inherit; font-size: 0.85em; background: #fff; }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/demo.js"></script>
+    <h1>dim demo</h1>
+    <p>
+      Click <strong>+1</strong> to bump the counter. Each update is cached, so
+      <kbd>u</kbd> undoes the last one. <kbd>U</kbd> (shift) calls <code>back()</code> repeatedly.
+    </p>
+    <div class="counter">
+      <button id="btn">+1</button>
+      <span id="count">0</span>
+    </div>
+    <p class="hint">Source lives in <code>src/dim.js</code>.</p>
+
     <script type="module">
-          import dim  from '/src/main.js'
-          
-          let counter = 0;
-          const render = ( counter ) => {
-            return `<p>My List is here:</p> 
-                      <ul>
-                          <li>${counter}</li>
-                          <li>${counter+1}</li>
-                          <li>${counter+2}</li>
-                      </ul>`
-              }   // render func.
-          
+      import dim from '/src/main.js'
 
-          let ranger = dim ();
+      const d = dim()
 
- 
-          
+      d.set(({ start, end }) => {
+        const root = document.querySelector('.counter')
+        root.prepend(start)
+        root.append(end)
+        return 'counter'
+      })
 
-          function setupCounter ( element, ranger ) {
-                      const setCounter = (count) => {
-                                              counter = count
-                                              element.innerHTML = `count is ${counter}`
-                                              let logos = ranger.get ( 'logos' )
-                                              if ( counter > 0 )   logos.update ( render ( counter), 'cache' ) // using cache for this update. Can be reversed by calling logos.back ()
-                                          }
-                      element.addEventListener ( 'click', () => setCounter(counter + 1))
-                      setCounter ( 0 )
-              } // setupCounter func.
-          
+      const range = d.get('counter')
+      const count = document.querySelector('#count')
+      const btn   = document.querySelector('#btn')
 
+      let n = 0
+      btn.addEventListener('click', () => {
+        n += 1
+        range.update(String(n), 'cache')
+      })
 
-          ranger.set ( ({start,end}) => {
-                    let content = document.querySelector ( '#app div' )
-                    let title = document.querySelector ( '#app h1' )
-                    // Put the start and end markers in the DOM
-                    content?.prepend ( start )
-                    title?.before ( end )
-                    return 'logos' // Range with alias 'logos'
-                })
-          
-          let logos = ranger.get ( 'logos' );
-          logos.update ( `initial: ${render(0)}` ) // no cache example
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'u') range.back()
+      })
 
-          window.logos = logos // Visible in the console. Testing the cache API
-          
-          // logos?.prepend ( 'Hello World' )
-          // logos?.append ( 'Hello World' )
-          // ranger.get ( 'logos' )?.delete ()
-          // console.log ( logos?.isEmpty ())
-          setupCounter ( document.querySelector('#counter'), ranger )
+      window.d = d
+      window.range = range
     </script>
   </body>
 </html>
