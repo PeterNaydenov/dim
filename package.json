@@ -4,24 +4,50 @@
   "type": "module",
   "license": "MIT",
   "author": "Peter Naydenov",
+  "description": "Lightweight library that creates invisible DOM markers for defining ranges, inserting, replacing, and undoing content in place.",
+  "keywords": [
+    "dom",
+    "range",
+    "marker",
+    "invisible",
+    "editable-region",
+    "content-slot"
+  ],
+  "homepage": "https://github.com/peter-naydenov/dim#readme",
+  "bugs": "https://github.com/peter-naydenov/dim/issues",
   "repository": "https://github.com/peter-naydenov/dim.git",
-  "description": "Invisible Markers in the DOM",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "Changelog.md",
+    "LICENSE",
+    "tsconfig.json"
+  ],
   "main": "dist/dim.cjs",
   "module": "dist/dim.js",
-  "types": "dist/dim.d.ts",
+  "types": "dist/main.d.ts",
   "exports": {
     ".": {
       "import": "./dist/dim.js",
-      "require": "./dist/dim.cjs"
+      "require": "./dist/dim.cjs",
+      "types": "./dist/main.d.ts"
     },
     "./umd": "./dist/dim.umd.cjs"
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "build:types": "tsc",
+    "build:js": "vite build",
+    "build": "npm run build:types && npm run build:js",
+    "typecheck": "tsc --noEmit",
     "test": "vitest",
-    "cover": "vitest run --coverage"
+    "cover": "vitest run --coverage",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build"
   },
   "devDependencies": {
     "@typescript/typescript6": "^6.0.2",
@@ -29,7 +55,6 @@
     "jsdom": "^29.1.1",
     "typescript": "^7.0.2",
     "vite": "^8.1.5",
-    "vite-plugin-dts": "^5.0.3",
     "vitest": "^4.1.10"
   },
   "allowScripts": {
