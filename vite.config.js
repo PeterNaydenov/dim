@@ -17,5 +17,23 @@ export default defineConfig ({
       }
     }
   },
-  plugins: [dts({ insertTypesEntry: true })]
+  plugins: [
+    dts({
+      tsconfigPath: './tsconfig.json',
+      include: ['src/**/*.js'],
+      exclude: ['test/**', 'demo.js'],
+      insertTypesEntry: false,
+      cleanVueFileName: true,
+      copyDtsFiles: false,
+      beforeWriteFile: (filePath, content) => {
+        if (filePath.endsWith('main.d.ts')) {
+          return {
+            filePath: filePath.replace(/main\.d\.ts$/, 'dim.d.ts'),
+            content
+          }
+        }
+        return undefined
+      }
+    })
+  ]
 })
