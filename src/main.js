@@ -1,17 +1,28 @@
 /**
-  DOM Invisible Markers (dim) 
-  ==========================
-  A lightweight library for creating and managing invisible markers in the DOM
-
-  History notes:
-      - Created on 2025-08-27;
+ * @file DOM Invisible Markers (dim).
+ * Lightweight library for creating and managing invisible markers in the DOM.
+ * 
  */
 
 
 
 /**
- * Creates invisible markers in the DOM to define ranges, allowing content insertion and manipulation.
- * @returns {Object} The dim API with set, get, and reset methods
+ * *  
+ * History notes:
+ *     - Created on 2025-08-27;
+ */
+
+
+
+
+
+/**
+ * Creates a dim instance for managing invisible DOM markers.
+ * @returns {{set: Function, get: Function, reset: Function}} API to register, retrieve, and clear ranges.
+ * @example
+ * const d = dim();
+ * d.set(({ start, end }) => { document.body.append(start, end); });
+ * d.get('0').update('<p>Hello</p>');
  */
 function dim () {
         let 
@@ -20,9 +31,8 @@ function dim () {
             ;
         /**
          * Registers a new range with invisible start and end markers in the DOM.
-         * @param {Function} fn - Callback function receiving {start, end} markers and any additional args
-         * @param {...*} args - Additional arguments passed to the callback
-         * @param {string} [fn.return] - Optional alias name for the range
+         * @param {Function} fn - Callback receiving `{start, end}` markers; may return a string to register an alias.
+         * @param {...*} args - Additional arguments forwarded to the callback.
          * @returns {void}
          * @example
          * d.set(({ start, end }) => {
@@ -33,7 +43,8 @@ function dim () {
          * }, arg1, arg2);
          */
         function set  ( fn, ...args ) {
-                      let 
+                      if ( typeof fn !== 'function' )   throw new TypeError ( 'set() requires a function as the first argument' )
+                      let
                             start = document.createTextNode ('')
                           , end   = document.createTextNode ('')
                           ;
@@ -47,9 +58,9 @@ function dim () {
                       ranges[num] = rangeAPI
               } // set func.
         /**
-         * Retrieves one or more ranges by name, numeric index, or comma-separated names.
-         * @param {string|string[]} name - Range alias, numeric index ('0', '1'), comma-separated names ('a, b'), or array of names
-         * @returns {Object|Object[]|undefined} The range API object(s) or undefined if not found
+         * Retrieves one or more ranges by alias, numeric index, or comma-separated names.
+         * @param {string|string[]} name - Alias, numeric index (`'0'`, `'1'`), comma-separated names (`'a, b'`), or an array of names.
+         * @returns {Object|Object[]|undefined} A single range API, an array of range APIs (entries may be `undefined` for missing keys), or `undefined` for any non-string non-array argument.
          * @example
          * const r = d.get('0');           // By numeric index
          * const r = d.get('myRange');     // By alias name
@@ -57,7 +68,12 @@ function dim () {
          * const [r1, r2] = d.get(['a', 'b']); // Multiple by array
          */
         function get ( name ) {
-                    if ( name.includes(',') )   name = name.split ( ',').map ( n => n.trim() )
+                    // Defensive: `name.includes` would throw on undefined /
+                    // null / non-string. Return `undefined` for any non-string
+                    // non-array argument so the call is harmless instead of
+                    // crashing the consumer.
+                    if ( typeof name !== 'string' && !Array.isArray ( name ) )   return undefined
+                    if ( typeof name === 'string' && name.includes (','))   name = name.split ( ',').map ( n => n.trim() )
                     return (name instanceof Array) ? name.map ( n => aliases[n] || ranges[n] ) : aliases[name] || ranges[name]
               } // get func.
         /**
@@ -96,21 +112,43 @@ function _convertToDOM ( code ) {
 
 /**
  * Creates a range API for manipulating content between invisible markers.
- * @param {Range} range - The DOM Range object
- * @param {Text} start - The start marker node
- * @param {Text} end - The end marker node
- * @returns {Object} The range API with manipulation methods
+ * @param {Range} range - The DOM Range object.
+ * @param {Text} start - The start marker node.
+ * @param {Text} end - The end marker node.
+ * @returns {{update: Function, clearCache: Function, getContext: Function, isEmpty: Function, delete: Function, back: Function, prepend: Function, append: Function}} Range manipulation methods.
  * @private
  */
 function makeMyAPI ( range, start, end ) {
     let cache = [];
 
     /**
+     * Re-anchors the range to the original start/end markers.
+     *
+     * DOM Range spec quirks: `insertNode` moves the range's end position
+     * to *after* the inserted content, and `deleteContents` collapses
+     * the range. If we don't reset the range before each modifying
+     * operation, the range's effective coverage shrinks over time — the
+     * next `update`/`delete` operates on a smaller area, child markers
+     * placed *between* the start and end are never deleted, and the
+     * `validate()` orphan-detection check (which depends on the markers
+     * actually being removed from the DOM) can never fire.
+     *
+     * Call this *after* `validate()` and *before* any operation that
+     * uses the range object.
+     *
+     * @private
+     * @returns {void}
+     */
+    function refreshRange () {
+            range.setStartAfter ( start )
+            range.setEndBefore  ( end )
+        } // refreshRange func.
+
+    /**
      * Validates that the range markers are still connected to the DOM.
      * When a parent range updates its content, nested range markers get deleted from the DOM.
-     * This function checks if the markers still exist in the document tree.
      * @private
-     * @returns {boolean} True if markers are connected, false if removed from DOM
+     * @returns {boolean} `true` if markers are connected, `false` if removed from DOM.
      */
     function validate () {
             if ( !start.isConnected || !end.isConnected ) {
@@ -124,7 +162,7 @@ function makeMyAPI ( range, start, end ) {
 /**
          * Updates the content within the range.
          * @param {string} code - HTML string to insert
-         * @param {string} [keepCache=''] - If 'cache', preserves current content in cache for undo
+         * @param {string} [keepCache] - Pass `'cache'` to save the current range contents to the undo cache before modifying; default `''` skips caching.
          * @returns {void}
          * @example
          * range.update('<p>New content</p>');
@@ -132,6 +170,7 @@ function makeMyAPI ( range, start, end ) {
          */
         update ( code, keepCache = '' ) {
             if ( !validate () )   return
+            refreshRange ()
             if ( keepCache === 'cache' )   cache.push ( range.cloneContents() )
             range.deleteContents ()
             range.insertNode ( _convertToDOM ( code ) )
@@ -167,12 +206,13 @@ function makeMyAPI ( range, start, end ) {
          */
         isEmpty    : () => {
                 if ( !validate () )   return true
+                refreshRange ()
                 return range.collapsed
             },
 
         /**
          * Deletes all content within the range.
-         * @param {string} [keepCache=''] - If 'cache', preserves content in cache for undo
+         * @param {string} [keepCache] - Pass `'cache'` to save the current range contents to the undo cache before deleting; default `''` skips caching.
          * @returns {void}
          * @example
          * range.delete();
@@ -180,6 +220,7 @@ function makeMyAPI ( range, start, end ) {
          */
         delete     : ( keepCache = '' ) => {
             if ( !validate () )   return
+            refreshRange ()
             if ( keepCache === 'cache' )   cache.push ( range.cloneContents() )
             range.deleteContents ()
         },
@@ -192,6 +233,7 @@ function makeMyAPI ( range, start, end ) {
          */
         back () {
             if ( !validate () )   return
+            refreshRange ()
             let content = cache.pop ()
             if ( content ) {  
                 range.deleteContents ()
@@ -202,7 +244,7 @@ function makeMyAPI ( range, start, end ) {
         /**
          * Inserts content before the start marker.
          * @param {string} code - HTML string to insert
-         * @param {string} [keepCache=''] - If 'cache', preserves content in cache
+         * @param {string} [keepCache] - Pass `'cache'` to save the current range contents to the undo cache before prepending; default `''` skips caching.
          * @returns {void}
          * @example
          * range.prepend('<b>Before</b>');
@@ -216,7 +258,7 @@ function makeMyAPI ( range, start, end ) {
         /**
          * Inserts content after the end marker.
          * @param {string} code - HTML string to insert
-         * @param {string} [keepCache=''] - If 'cache', preserves content in cache
+         * @param {string} [keepCache] - Pass `'cache'` to save the current range contents to the undo cache before appending; default `''` skips caching.
          * @returns {void}
          * @example
          * range.append('<i>After</i>');
