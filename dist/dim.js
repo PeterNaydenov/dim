@@ -2,6 +2,7 @@
 function e() {
 	let e = {}, t = {};
 	function r(r, ...i) {
+		if (typeof r != "function") throw TypeError("set() requires a function as the first argument");
 		let a = document.createTextNode(""), o = document.createTextNode(""), s = r({
 			start: a,
 			end: o
@@ -13,7 +14,7 @@ function e() {
 		e[u] = l;
 	}
 	function i(n) {
-		return n.includes(",") && (n = n.split(",").map((e) => e.trim())), n instanceof Array ? n.map((n) => t[n] || e[n]) : t[n] || e[n];
+		if (!(typeof n != "string" && !Array.isArray(n))) return typeof n == "string" && n.includes(",") && (n = n.split(",").map((e) => e.trim())), n instanceof Array ? n.map((n) => t[n] || e[n]) : t[n] || e[n];
 	}
 	function a() {
 		e = {}, t = {};
@@ -31,30 +32,34 @@ function t(e) {
 function n(e, n, r) {
 	let i = [];
 	function a() {
+		e.setStartAfter(n), e.setEndBefore(r);
+	}
+	function o() {
 		return !n.isConnected || !r.isConnected ? (console.warn("Warning: Current range is not available in the DOM at this time"), !1) : !0;
 	}
 	return {
 		update(n, r = "") {
-			a() && (r === "cache" && i.push(e.cloneContents()), e.deleteContents(), e.insertNode(t(n)));
+			o() && (a(), r === "cache" && i.push(e.cloneContents()), e.deleteContents(), e.insertNode(t(n)));
 		},
 		clearCache: () => {
 			i = [];
 		},
-		getContext: () => a() ? e.commonAncestorContainer : null,
-		isEmpty: () => a() ? e.collapsed : !0,
+		getContext: () => o() ? e.commonAncestorContainer : null,
+		isEmpty: () => o() ? (a(), e.collapsed) : !0,
 		delete: (t = "") => {
-			a() && (t === "cache" && i.push(e.cloneContents()), e.deleteContents());
+			o() && (a(), t === "cache" && i.push(e.cloneContents()), e.deleteContents());
 		},
 		back() {
-			if (!a()) return;
+			if (!o()) return;
+			a();
 			let t = i.pop();
 			t && (e.deleteContents(), e.insertNode(t));
 		},
-		prepend(r, o = "") {
-			a() && (o === "cache" && i.push(e.cloneContents()), n.after(t(r)));
+		prepend(r, a = "") {
+			o() && (a === "cache" && i.push(e.cloneContents()), n.after(t(r)));
 		},
-		append(n, o = "") {
-			a() && (o === "cache" && i.push(e.cloneContents()), r.before(t(n)));
+		append(n, a = "") {
+			o() && (a === "cache" && i.push(e.cloneContents()), r.before(t(n)));
 		}
 	};
 }
