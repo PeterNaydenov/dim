@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite'
-import dts from 'vite-plugin-dts'
 import { resolve } from 'path'
 
 export default defineConfig ({
@@ -15,25 +14,7 @@ export default defineConfig ({
         exports: 'named',
         globals: { global: 'global' }
       }
-    }
-  },
-  plugins: [
-    dts({
-      tsconfigPath: './tsconfig.json',
-      include: ['src/**/*.js'],
-      exclude: ['test/**', 'demo.js'],
-      insertTypesEntry: false,
-      cleanVueFileName: true,
-      copyDtsFiles: false,
-      beforeWriteFile: (filePath, content) => {
-        if (filePath.endsWith('main.d.ts')) {
-          return {
-            filePath: filePath.replace(/main\.d\.ts$/, 'dim.d.ts'),
-            content
-          }
-        }
-        return undefined
-      }
-    })
-  ]
+    },
+    emptyOutDir: false
+  }
 })
