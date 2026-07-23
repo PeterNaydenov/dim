@@ -81,6 +81,8 @@ app.update('Hello World')
 app.update('<p>Hello <b>World</b></p>')   // HTML strings are parsed
 ```
 
+`code` is parsed as HTML and inserted live into the DOM (`update`, `prepend`, `append`) — never pass untrusted/user-supplied input without sanitizing it first.
+
 ### 4. Cache + undo
 
 Pass `'cache'` as the second argument to `update` (or `delete`) to save the current content for later. `back()` restores the most recently cached snapshot.
@@ -152,7 +154,7 @@ A `refreshRange()` is performed at the start of every modifying operation so the
 
 ## Links
 
-- [Changelog](https://github.com/peter-naydenov/dim/blob/master/Changelog.md)
+- [Changelog](https://github.com/PeterNaydenov/dim/blob/main/Changelog.md)
 
 
 ## Credits

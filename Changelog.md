@@ -2,6 +2,13 @@
 
 
 
+### 0.1.3 ( 2026-07-23 )
+- [x] Fix: `package.json`'s `repository`, `homepage`, and `bugs` fields, and the README's Changelog link, all pointed at `github.com/peter-naydenov/dim` — a path that 404s. The real repo is `github.com/PeterNaydenov/dim` (confirmed via `gh api`). The README link also used `blob/master/...`; the repo has no `master` ref at all, its default branch is `main`. Fixed both;
+- [x] Fix: `npm run build` never cleaned `dist/` before writing to it (`vite.config.js` had `emptyOutDir: false`), so stale/renamed build artifacts could silently linger and ship in the published tarball. Set `emptyOutDir: true` and reordered `build` to run `build:js` (which now empties `dist/` before writing the bundles) before `build:types` (which only adds the declaration file into the now-clean directory). Verified: dropped stray files into `dist/`, including a fake `dim.d.ts`, and confirmed a full `npm run build` removes them;
+- [x] Docs: documented that `code` (in `update`/`prepend`/`append`) is parsed as HTML via a `<template>` element and inserted live into the DOM — untrusted/user-supplied input must be sanitized first. Added the warning to the `RangeMutator` JSDoc typedef and to the README's "Replace the content" section; previously undocumented;
+
+
+
 ### 0.1.2 ( 2026-07-23 )
 - [x] Build: switched `.d.ts` generation from `vite-plugin-dts` to `tsc` directly. Removed the `vite-plugin-dts` dependency and the unused `vite.config.mjs`; `vite.config.js` now only bundles `es`/`cjs`/`umd`. `tsconfig.json` now has `checkJs: true` and `noEmitOnError: true` so type errors in the JSDoc fail the build instead of being silently ignored. Added `build:types` / `build:js` / `typecheck` / `prepublishOnly` npm scripts (`build` runs both steps; `prepublishOnly` runs typecheck + tests + build before every publish);
 - [x] Build: `tsc` emits the declaration file as `dist/main.d.ts` (named after the source entry, `src/main.js`) instead of `dist/dim.d.ts`. `package.json`'s `types` and `exports["."].types` now point at `dist/main.d.ts`;

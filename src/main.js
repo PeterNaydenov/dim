@@ -4,6 +4,8 @@
  */
 
 /**
+ * `code` is parsed as HTML (via a `<template>` element) and inserted live into the DOM —
+ * never pass untrusted/user-supplied input without sanitizing it first.
  * @typedef {(code: string, keepCache?: string) => void} RangeMutator
  */
 

@@ -1,4 +1,8 @@
 export default dim;
+/**
+ * `code` is parsed as HTML (via a `<template>` element) and inserted live into the DOM —
+ * never pass untrusted/user-supplied input without sanitizing it first.
+ */
 export type RangeMutator = (code: string, keepCache?: string) => void;
 export type RangeApi = {
     /**
@@ -57,6 +61,8 @@ export type DimApi = {
  * Lightweight library for creating and managing invisible markers in the DOM.
  */
 /**
+ * `code` is parsed as HTML (via a `<template>` element) and inserted live into the DOM —
+ * never pass untrusted/user-supplied input without sanitizing it first.
  * @typedef {(code: string, keepCache?: string) => void} RangeMutator
  */
 /**

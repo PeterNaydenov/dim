@@ -13,9 +13,9 @@
     "editable-region",
     "content-slot"
   ],
-  "homepage": "https://github.com/peter-naydenov/dim#readme",
-  "bugs": "https://github.com/peter-naydenov/dim/issues",
-  "repository": "https://github.com/peter-naydenov/dim.git",
+  "homepage": "https://github.com/PeterNaydenov/dim#readme",
+  "bugs": "https://github.com/PeterNaydenov/dim/issues",
+  "repository": "https://github.com/PeterNaydenov/dim.git",
   "sideEffects": false,
   "engines": {
     "node": ">=18"
@@ -43,7 +43,7 @@
     "dev": "vite",
     "build:types": "tsc",
     "build:js": "vite build",
-    "build": "npm run build:types && npm run build:js",
+    "build": "npm run build:js && npm run build:types",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "cover": "vitest run --coverage",

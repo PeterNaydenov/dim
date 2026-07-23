@@ -15,6 +15,6 @@ export default defineConfig ({
         globals: { global: 'global' }
       }
     },
-    emptyOutDir: false
+    emptyOutDir: true
   }
 })
