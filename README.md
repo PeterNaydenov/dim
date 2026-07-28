@@ -27,7 +27,19 @@ import dim from '@peter.naydenov/dim'
 CommonJS (uses `./dist/dim.cjs` via the package's `exports` field):
 
 ```js
-const dim = require('@peter.naydenov/dim')
+const { default: dim } = require('@peter.naydenov/dim')
+// or
+const dim = require('@peter.naydenov/dim').default
+```
+
+UMD (browser via `<script>`, no bundler — exposes `window.dim`):
+
+```html
+<script src="./node_modules/@peter.naydenov/dim/dist/dim.umd.cjs"></script>
+<script>
+  const d = dim()
+  // ...
+</script>
 ```
 
 
@@ -81,7 +93,7 @@ app.update('Hello World')
 app.update('<p>Hello <b>World</b></p>')   // HTML strings are parsed
 ```
 
-`code` is parsed as HTML and inserted live into the DOM (`update`, `prepend`, `append`) — never pass untrusted/user-supplied input without sanitizing it first.
+`code` is parsed as HTML and inserted into the DOM (`update`, `prepend`, `append`) — never pass untrusted/user-supplied input without sanitizing it first.
 
 ### 4. Cache + undo
 
@@ -143,11 +155,12 @@ Methods exposed on each range object returned by `get`.
 
 ## Orphan detection
 
-A "parent" range whose `update` or `delete` removes the markers of any "child" range that was placed between them leaves the child range **orphaned** — its `start` and `end` `Text` nodes are no longer in the DOM tree. Every Range API method guards against this: it checks both markers are still connected, and if not, it logs a single `console.warn` and returns gracefully:
+A "parent" range whose `update` or `delete` removes the markers of any "child" range that was placed between them leaves the child range **orphaned** — its `start` and `end` `Text` nodes are no longer in the DOM tree. The mutating and inspection methods guard against this: they check both markers are still connected, and if not, they log a single `console.warn` and return gracefully:
 
 - `update` / `delete` / `prepend` / `append` / `back` → no-op
 - `getContext` → `null`
 - `isEmpty` → `true`
+- `clearCache` → no-op (it only mutates the internal cache, which is harmless on an orphaned range)
 
 A `refreshRange()` is performed at the start of every modifying operation so the underlying `Range` always covers `[after start, before end]`, regardless of how many `update`s preceded it.
 
