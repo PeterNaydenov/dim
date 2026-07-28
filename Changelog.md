@@ -2,6 +2,18 @@
 
 
 
+### 0.1.4 ( 2026-07-28 )
+- [x] Fix: `prepend` and `append` did not refresh the range before snapshotting the cache. After a prior `update` (or any `insertNode`) the underlying `Range` is collapsed at "after the inserted content" per the DOM Range spec, so `range.cloneContents()` returned an empty `DocumentFragment` — the cache held nothing, and a subsequent `back()` deleted the range content without restoring it (silent data loss). Added `refreshRange()` before the cache snapshot in both methods. 2 regression tests (one for `append`, one for `prepend`) — `update('<x>'); range.append('<y>', 'cache'); range.back()` now correctly restores `'<x>'`;
+- [x] Fix: `set()` threw the opaque DOMException `InvalidNodeTypeError: The given Node has no parent.` (raised by `range.setStartAfter` per spec) when the callback forgot to attach the `start` and/or `end` markers. Now `set()` validates immediately after the callback returns and throws a clear `Error: dim.set: callback must attach both "start" and "end" markers to the DOM` — no DOMException, no need to know the Range spec to diagnose. 1 regression test covering all three failure shapes (nothing attached, only `start` attached, only `end` attached);
+- [x] Fix: README's CommonJS import example was broken — `const dim = require('@peter.naydenov/dim')` returned the module namespace object (`{ default: [Function] }`), not the function itself. The CJS bundle is built as a default-export-only ESM-as-CJS module. Updated the snippet to `const { default: dim } = require('@peter.naydenov/dim')` (with `.default` shown as an alternative);
+- [x] Docs: README's "Orphan detection" section claimed "Every Range API method guards against this", but `clearCache` does not run `validate()` — it only mutates the internal cache array, which is harmless on an orphaned range. Listed `clearCache` in the no-op table to match reality instead of overclaiming;
+- [x] Docs: added a UMD import example (`<script src=".../dim.umd.cjs">` exposes `window.dim`) since `package.json` exposes `"./umd"` but the README didn't mention it;
+- [x] Docs: reworded "parsed as HTML and inserted **live** into the DOM" → "parsed as HTML and inserted into the DOM" (the "live" was unusual phrasing);
+- [x] Tests: 36 → 39 passing;
+- [x] Cleanup: fixed "Apply start and end **makers**" → "markers" comment in `src/main.js`, and "**Mmultiple** ranges" → "Multiple" test name in `test/01-general.test.js`;
+
+
+
 ### 0.1.3 ( 2026-07-23 )
 - [x] Fix: `package.json`'s `repository`, `homepage`, and `bugs` fields, and the README's Changelog link, all pointed at `github.com/peter-naydenov/dim` — a path that 404s. The real repo is `github.com/PeterNaydenov/dim` (confirmed via `gh api`). The README link also used `blob/master/...`; the repo has no `master` ref at all, its default branch is `main`. Fixed both;
 - [x] Fix: `npm run build` never cleaned `dist/` before writing to it (`vite.config.js` had `emptyOutDir: false`), so stale/renamed build artifacts could silently linger and ship in the published tarball. Set `emptyOutDir: true` and reordered `build` to run `build:js` (which now empties `dist/` before writing the bundles) before `build:types` (which only adds the declaration file into the now-clean directory). Verified: dropped stray files into `dist/`, including a fake `dim.d.ts`, and confirmed a full `npm run build` removes them;
