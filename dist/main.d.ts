@@ -1,6 +1,6 @@
 export default dim;
 /**
- * `code` is parsed as HTML (via a `<template>` element) and inserted live into the DOM —
+ * `code` is parsed as HTML (via a `<template>` element) and inserted into the DOM —
  * never pass untrusted/user-supplied input without sanitizing it first.
  */
 export type RangeMutator = (code: string, keepCache?: string) => void;
@@ -61,7 +61,7 @@ export type DimApi = {
  * Lightweight library for creating and managing invisible markers in the DOM.
  */
 /**
- * `code` is parsed as HTML (via a `<template>` element) and inserted live into the DOM —
+ * `code` is parsed as HTML (via a `<template>` element) and inserted into the DOM —
  * never pass untrusted/user-supplied input without sanitizing it first.
  * @typedef {(code: string, keepCache?: string) => void} RangeMutator
  */
@@ -78,7 +78,7 @@ export type DimApi = {
  */
 /**
  * @callback SetCallback
- * @param {{ start: Text, end: Text }} markers Invisible marker nodes; the callback must attach both to the DOM, or range creation throws.
+ * @param {{ start: Text, end: Text }} markers Invisible marker nodes; the callback must attach both to the DOM.
  * @param {...*} args Additional arguments forwarded by the caller.
  * @returns {string|void} Return a string to register the range under that alias.
  */
