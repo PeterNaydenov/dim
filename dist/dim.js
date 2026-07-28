@@ -6,7 +6,9 @@ function e() {
 		let a = document.createTextNode(""), o = document.createTextNode(""), s = r({
 			start: a,
 			end: o
-		}, ...i), c = document.createRange();
+		}, ...i);
+		if (!a.parentNode || !o.parentNode) throw Error("dim.set: callback must attach both \"start\" and \"end\" markers to the DOM");
+		let c = document.createRange();
 		c.setStartAfter(a), c.setEndBefore(o);
 		let l = n(c, a, o);
 		s && (t[s] = l);
@@ -55,11 +57,11 @@ function n(e, n, r) {
 			let t = i.pop();
 			t && (e.deleteContents(), e.insertNode(t));
 		},
-		prepend(r, a = "") {
-			o() && (a === "cache" && i.push(e.cloneContents()), n.after(t(r)));
+		prepend(r, s = "") {
+			o() && (a(), s === "cache" && i.push(e.cloneContents()), n.after(t(r)));
 		},
-		append(n, a = "") {
-			o() && (a === "cache" && i.push(e.cloneContents()), r.before(t(n)));
+		append(n, s = "") {
+			o() && (a(), s === "cache" && i.push(e.cloneContents()), r.before(t(n)));
 		}
 	};
 }
