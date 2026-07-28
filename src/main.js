@@ -4,7 +4,7 @@
  */
 
 /**
- * `code` is parsed as HTML (via a `<template>` element) and inserted live into the DOM —
+ * `code` is parsed as HTML (via a `<template>` element) and inserted into the DOM —
  * never pass untrusted/user-supplied input without sanitizing it first.
  * @typedef {(code: string, keepCache?: string) => void} RangeMutator
  */
@@ -23,7 +23,7 @@
 
 /**
  * @callback SetCallback
- * @param {{ start: Text, end: Text }} markers Invisible marker nodes; the callback must attach both to the DOM, or range creation throws.
+ * @param {{ start: Text, end: Text }} markers Invisible marker nodes; the callback must attach both to the DOM.
  * @param {...*} args Additional arguments forwarded by the caller.
  * @returns {string|void} Return a string to register the range under that alias.
  */
@@ -50,10 +50,11 @@ function dim () {
             ;
         /**
          * Registers a new range with invisible start and end markers in the DOM.
-         * @param {Function} fn - Callback receiving `{start, end}` markers; may return a string to register an alias.
+         * @param {Function} fn - Callback receiving `{start, end}` markers; may return a string to register an alias. Must attach both markers to the DOM before returning.
          * @param {...*} args - Additional arguments forwarded to the callback.
          * @returns {void}
          * @throws {TypeError} If `fn` is not a function.
+         * @throws {Error} If the callback did not attach `start` and/or `end` to the DOM (`'dim.set: callback must attach both "start" and "end" markers to the DOM'`).
          * @example
          * d.set(({ start, end }) => {
          *   const div = document.createElement('div');
@@ -68,7 +69,8 @@ function dim () {
                             start = document.createTextNode ('')
                           , end   = document.createTextNode ('')
                           ;
-                      let name = fn ( {start, end}, ...args )   // Apply start and end makers to the DOM
+                      let name = fn ( {start, end}, ...args )   // Apply start and end markers to the DOM
+                      if ( !start.parentNode || !end.parentNode )   throw new Error ( 'dim.set: callback must attach both "start" and "end" markers to the DOM' )
                       const range = document.createRange ()
                       range.setStartAfter ( start )
                       range.setEndBefore ( end )
@@ -271,6 +273,7 @@ function makeMyAPI ( range, start, end ) {
          */
         prepend ( code, keepCache = '' ) {
             if ( !validate () )   return
+            refreshRange ()
             if ( keepCache === 'cache' )   cache.push ( range.cloneContents() )
             start.after ( _convertToDOM ( code ) )
         },
@@ -285,6 +288,7 @@ function makeMyAPI ( range, start, end ) {
          */
         append ( code, keepCache = '' ) {
             if ( !validate () )   return
+            refreshRange ()
             if ( keepCache === 'cache' )   cache.push ( range.cloneContents() )
             end.before ( _convertToDOM ( code ) )
         }
