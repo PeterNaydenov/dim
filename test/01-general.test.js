@@ -108,7 +108,7 @@ describe ( 'Dim - DOM Invisible Markers', () => {
         })
 
 
-        it ( 'Mmultiple ranges by array of names', () => {
+        it ( 'Multiple ranges by array of names', () => {
             d.set(({ start, end }) => {
                 document.body.appendChild(start)
                 document.body.appendChild(end)
@@ -738,6 +738,88 @@ describe ( 'Dim - DOM Invisible Markers', () => {
             expect ( e.message ).toMatch ( /function/i )
         }
     }) // it BUG 3
+
+
+    // -----------------------------------------------------------------
+    // BUG 4 — `prepend` and `append` cached the range contents with
+    // `range.cloneContents()` without first calling `refreshRange()`.
+    // After a prior `update` (which collapses the range per spec) the
+    // cached snapshot was an empty `DocumentFragment`, and the next
+    // `back()` deleted the range content without restoring it. Now
+    // both methods call `refreshRange()` before snapshotting the cache.
+    // -----------------------------------------------------------------
+    it ( 'BUG 4 — append("…", "cache") after update() restores the prior content via back()', () => {
+        d.set(({ start, end }) => {
+            const div = document.createElement('div')
+            div.id = 'b4-append'
+            div.appendChild(start)
+            div.appendChild(end)
+            document.body.appendChild(div)
+        })
+
+        const range = d.get('0')
+        const div   = document.getElementById('b4-append')
+
+        range.update('<span>original</span>')
+        range.append('<i>tail</i>', 'cache')
+        // At this point the cache should hold the range content
+        // (`<span>original</span>`), not an empty fragment.
+        range.back()
+
+        // After undoing the append, only the original content should
+        // remain — the <i>tail</i> should be gone, and the cached
+        // snapshot should have been restored.
+        expect ( div.innerHTML ).toBe ( '<span>original</span>' )
+    }) // it BUG 4 — append
+
+
+    it ( 'BUG 4 — prepend("…", "cache") after update() restores the prior content via back()', () => {
+        d.set(({ start, end }) => {
+            const div = document.createElement('div')
+            div.id = 'b4-prepend'
+            div.appendChild(start)
+            div.appendChild(end)
+            document.body.appendChild(div)
+        })
+
+        const range = d.get('0')
+        const div   = document.getElementById('b4-prepend')
+
+        range.update('<span>original</span>')
+        range.prepend('<b>head</b>', 'cache')
+        range.back()
+
+        expect ( div.innerHTML ).toBe ( '<span>original</span>' )
+    }) // it BUG 4 — prepend
+
+
+    // -----------------------------------------------------------------
+    // BUG 5 — `set()` threw the opaque DOMException
+    // `InvalidNodeTypeError: The given Node has no parent.` (raised by
+    // `range.setStartAfter` per spec) when the callback forgot to
+    // attach the markers. Now `set()` validates immediately after the
+    // callback returns and throws a clear `Error` with a helpful
+    // message — no DOMException, no need to know the Range spec to
+    // diagnose.
+    // -----------------------------------------------------------------
+    it ( 'BUG 5 — set() throws a clear Error when callback forgets to attach markers', () => {
+        // Callback never touches `start` / `end`.
+        expect ( () => d.set(({ start, end }) => {
+            /* intentionally do nothing */
+        }) ).toThrow ( /must attach both "start" and "end" markers/i )
+
+        // Callback attaches only `start`, not `end`.
+        expect ( () => d.set(({ start, end }) => {
+            document.body.appendChild(start)
+            /* forgot end */
+        }) ).toThrow ( /must attach both "start" and "end" markers/i )
+
+        // Callback attaches only `end`, not `start`.
+        expect ( () => d.set(({ start, end }) => {
+            document.body.appendChild(end)
+            /* forgot start */
+        }) ).toThrow ( /must attach both "start" and "end" markers/i )
+    }) // it BUG 5
 
 
 }) // describe
