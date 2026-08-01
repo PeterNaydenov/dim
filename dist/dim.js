@@ -1,69 +1,121 @@
 //#region src/main.js
 function e() {
-	let e = {}, t = {};
-	function r(r, ...i) {
-		if (typeof r != "function") throw TypeError("set() requires a function as the first argument");
-		let a = document.createTextNode(""), o = document.createTextNode(""), s = r({
+	let e = {}, t = {}, i = 0;
+	function a(n, ...r) {
+		if (typeof n != "function") throw TypeError("set() requires a function as the first argument");
+		let a = document.createTextNode(""), s = document.createTextNode(""), c = n({
 			start: a,
-			end: o
-		}, ...i);
-		if (!a.parentNode || !o.parentNode) throw Error("dim.set: callback must attach both \"start\" and \"end\" markers to the DOM");
-		let c = document.createRange();
-		c.setStartAfter(a), c.setEndBefore(o);
-		let l = n(c, a, o);
-		s && (t[s] = l);
-		let u = Object.keys(e).length;
-		e[u] = l;
+			end: s
+		}, ...r);
+		if (!a.parentNode || !s.parentNode) throw Error("dim.set: callback must attach both \"start\" and \"end\" markers to the DOM");
+		let l = document.createRange();
+		l.setStartAfter(a), l.setEndBefore(s);
+		let u = o(l, a, s);
+		c && (t[c] = u), e[i++] = u;
 	}
-	function i(n) {
-		if (!(typeof n != "string" && !Array.isArray(n))) return typeof n == "string" && n.includes(",") && (n = n.split(",").map((e) => e.trim())), n instanceof Array ? n.map((n) => t[n] || e[n]) : t[n] || e[n];
+	function s(r) {
+		if (r == null || typeof r != "string" && typeof r != "number" && !Array.isArray(r)) return;
+		let i = Array.isArray(r) || typeof r == "string" && r.includes(","), a = n(r).map((n) => t[n] || e[n]);
+		return i ? a : a[0];
 	}
-	function a() {
-		e = {}, t = {};
+	function c(i) {
+		let a;
+		if (i === void 0) a = r(Object.keys(t), Object.keys(e));
+		else if (typeof i == "string" || typeof i == "number" || Array.isArray(i)) a = n(i);
+		else return;
+		for (let n of new Set(a)) {
+			let r = t[n] || e[n];
+			if (r) {
+				r.destroy();
+				for (let [e, n] of Object.entries(t)) n === r && delete t[e];
+				for (let [t, n] of Object.entries(e)) n === r && delete e[t];
+			}
+		}
+	}
+	function l() {
+		return r(Object.keys(t), Object.keys(e));
+	}
+	function u() {
+		return Object.keys(t);
+	}
+	function d(r) {
+		return r == null || typeof r != "string" && typeof r != "number" && !Array.isArray(r) ? !1 : n(r).every((n) => !!(t[n] || e[n]));
 	}
 	return {
-		set: r,
-		get: i,
-		reset: a
+		set: a,
+		get: s,
+		reset: c,
+		list: l,
+		aliases: u,
+		has: d
 	};
 }
 function t(e) {
+	return typeof e == "number" && Number.isInteger(e) && e >= 0 ? String(e) : e;
+}
+function n(e) {
+	return typeof e == "number" ? [t(e)] : (Array.isArray(e) ? e : e.split(",")).map((e) => typeof e == "string" ? e.trim() : e).map(t);
+}
+function r(e, t) {
+	return [.../* @__PURE__ */ new Set([...e, ...t])];
+}
+function i(e) {
 	let t = document.createElement("template");
 	return t.innerHTML = e, t.content;
 }
-function n(e, n, r) {
-	let i = [];
-	function a() {
-		e.setStartAfter(n), e.setEndBefore(r);
-	}
+function a(e) {
+	if (typeof e != "string" && !(e instanceof Node)) throw TypeError(`update/prepend/append require a string or a Node; received ${e === null ? "null" : Array.isArray(e) ? "array" : typeof e}`);
+}
+function o(e, t, n) {
+	let r = [];
 	function o() {
-		return !n.isConnected || !r.isConnected ? (console.warn("Warning: Current range is not available in the DOM at this time"), !1) : !0;
+		e.setStartAfter(t), e.setEndBefore(n);
 	}
-	return {
-		update(n, r = "") {
-			o() && (a(), r === "cache" && i.push(e.cloneContents()), e.deleteContents(), e.insertNode(t(n)));
+	function s() {
+		return !t.isConnected || !n.isConnected ? (console.warn("Warning: Current range is not available in the DOM at this time"), !1) : !0;
+	}
+	let c = {
+		update(t, n = "") {
+			s() && (a(t), o(), n === "cache" && r.push(e.cloneContents()), e.deleteContents(), e.insertNode(typeof t == "string" ? i(t) : t));
 		},
 		clearCache: () => {
-			i = [];
+			r = [];
 		},
-		getContext: () => o() ? e.commonAncestorContainer : null,
-		isEmpty: () => o() ? (a(), e.collapsed) : !0,
+		getContext: () => s() ? e.commonAncestorContainer : null,
+		isEmpty: () => s() ? (o(), e.collapsed) : !0,
 		delete: (t = "") => {
-			o() && (a(), t === "cache" && i.push(e.cloneContents()), e.deleteContents());
+			s() && (o(), t === "cache" && r.push(e.cloneContents()), e.deleteContents());
 		},
 		back() {
-			if (!o()) return;
-			a();
-			let t = i.pop();
+			if (!s()) return;
+			o();
+			let t = r.pop();
 			t && (e.deleteContents(), e.insertNode(t));
 		},
-		prepend(r, s = "") {
-			o() && (a(), s === "cache" && i.push(e.cloneContents()), n.after(t(r)));
+		prepend(n, c = "") {
+			s() && (a(n), o(), c === "cache" && r.push(e.cloneContents()), t.after(typeof n == "string" ? i(n) : n));
 		},
-		append(n, s = "") {
-			o() && (a(), s === "cache" && i.push(e.cloneContents()), r.before(t(n)));
-		}
+		append(t, c = "") {
+			s() && (a(t), o(), c === "cache" && r.push(e.cloneContents()), n.before(typeof t == "string" ? i(t) : t));
+		},
+		select() {
+			return s() ? (o(), e.cloneContents()) : null;
+		},
+		extract(t = "") {
+			if (!s()) return null;
+			o();
+			let n = e.cloneContents();
+			return t === "cache" && r.push(n.cloneNode(!0)), e.deleteContents(), n;
+		},
+		isOrphan: () => !t.isConnected || !n.isConnected,
+		toString: () => s() ? (o(), e.toString()) : ""
 	};
+	return Object.defineProperty(c, "destroy", {
+		enumerable: !1,
+		value() {
+			t.isConnected && t.parentNode.removeChild(t), n.isConnected && n.parentNode.removeChild(n);
+		}
+	}), c;
 }
 //#endregion
 export { e as default };
