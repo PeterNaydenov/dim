@@ -1,6 +1,6 @@
 {
   "name": "@peter.naydenov/dim",
-  "version": "0.1.4",
+  "version": "1.0.0",
   "type": "module",
   "license": "MIT",
   "author": "Peter Naydenov",
@@ -23,6 +23,7 @@
   "files": [
     "dist",
     "src",
+    ".agents/skills/peter-naydenov-dim",
     "README.md",
     "Changelog.md",
     "LICENSE",
@@ -30,24 +31,42 @@
   ],
   "main": "dist/dim.cjs",
   "module": "dist/dim.js",
-  "types": "dist/main.d.ts",
+  "types": "dist/main.d.cts",
   "exports": {
     ".": {
-      "import": "./dist/dim.js",
-      "require": "./dist/dim.cjs",
-      "types": "./dist/main.d.ts"
+      "import": {
+        "types": "./dist/main.d.ts",
+        "default": "./dist/dim.js"
+      },
+      "require": {
+        "types": "./dist/main.d.cts",
+        "default": "./dist/dim.cjs"
+      }
     },
-    "./umd": "./dist/dim.umd.cjs"
+    "./umd": {
+      "types": "./dist/main.d.cts",
+      "default": "./dist/dim.umd.cjs"
+    }
   },
   "scripts": {
     "dev": "vite",
-    "build:types": "tsc",
+    "build:types": "tsc && node scripts/make-cts.js",
     "build:js": "vite build",
     "build": "npm run build:js && npm run build:types",
     "typecheck": "tsc --noEmit",
-    "test": "vitest",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "cover": "vitest run --coverage",
-    "prepublishOnly": "npm run typecheck  && npm run build"
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "agents": {
+    "skills": [
+      {
+        "name": "peter-naydenov-dim",
+        "path": ".agents/skills/peter-naydenov-dim",
+        "description": "Use @peter.naydenov/dim — invisible DOM markers for editable ranges. Triggers on content-slot, hot-swap, A/B-test, undo-able editor zone, and similar Range-based UI work."
+      }
+    ]
   },
   "devDependencies": {
     "@typescript/typescript6": "^6.0.2",
