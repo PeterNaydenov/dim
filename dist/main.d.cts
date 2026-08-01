@@ -1,4 +1,3 @@
-export default dim;
 /**
  * `code` is parsed as HTML (via a `<template>` element) and inserted into the DOM —
  * never pass untrusted/user-supplied input without sanitizing it first.
@@ -6,8 +5,8 @@ export default dim;
  * Passing anything else (`null`, `undefined`, number, boolean, object, …) throws `TypeError`
  * BEFORE any mutation, so the existing range content is preserved.
  */
-export type RangeMutator = (code: string | Node, keepCache?: string) => void;
-export type RangeApi = {
+type RangeMutator = (code: string | Node, keepCache?: string) => void;
+type RangeApi = {
     /**
      * Replaces the range content with `code` (HTML string or Node); pass `'cache'` to save current content for undo.
      */
@@ -57,11 +56,11 @@ export type RangeApi = {
      */
     toString: () => string;
 };
-export type SetCallback = (markers: {
+type SetCallback = (markers: {
     start: Text;
     end: Text;
 }, ...args: any[]) => string | void;
-export type DimApi = {
+type DimApi = {
     /**
      * Registers a new range with invisible start/end markers placed by `fn`.
      */
@@ -138,3 +137,7 @@ export type DimApi = {
  * d.get('0').update('<p>Hello</p>');
  */
 declare function dim(): DimApi;
+declare namespace dim {
+    export { RangeMutator, RangeApi, SetCallback, DimApi };
+}
+export = dim;
