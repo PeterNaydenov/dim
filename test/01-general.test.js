@@ -203,6 +203,28 @@ describe ( 'Dim - DOM Invisible Markers', () => {
             expect(div.innerHTML).toBe('<b>modified</b>')
         })
 
+
+        it ( 'throws TypeError on bad input BEFORE mutating — content is preserved', () => {
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.id = 'guard'
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+            })
+
+            const range = d.get('0')
+            range.update('<p>original</p>')
+            const div = document.getElementById('guard')
+
+            for ( const bad of [ null, undefined, 0, false, {}, [], true ] ) {
+                expect ( () => range.update(bad) ).toThrow ( TypeError )
+                // CRITICAL: the previous content must NOT have been destroyed
+                // by deleteContents() before the throw.
+                expect ( div.innerHTML ).toBe ( '<p>original</p>' )
+            }
+        })
+
     })
 
 
@@ -361,7 +383,7 @@ describe ( 'Dim - DOM Invisible Markers', () => {
 
     describe ( 'Range API - prepend()', () => {
 
-        it ( 'should insert content before start marker', () => {
+        it ( 'should insert content at the start of the range (inside, after start marker)', () => {
             d.set(({ start, end }) => {
                 const div = document.createElement('div')
                 div.id = 'prepend-target'
@@ -393,12 +415,57 @@ describe ( 'Dim - DOM Invisible Markers', () => {
             expect(() => range.back()).not.toThrow()
         })
 
+
+        it ( 'prepend goes INSIDE the range, at the start — keeps existing content in order', () => {
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.id = 'prepend-inside'
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+            })
+
+            const range = d.get('0')
+            range.update('<span>middle</span>')
+            range.prepend('<b>head</b>')
+
+            // Inside the range (between start and end): <b>head</b> <span>middle</span>
+            // innerHTML shows only element children.
+            expect ( document.getElementById('prepend-inside').innerHTML )
+                .toBe ( '<b>head</b><span>middle</span>' )
+        })
+
+
+        it ( 'throws TypeError on bad input — content and cache untouched', () => {
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.id = 'prepend-guard'
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+            })
+
+            const range = d.get('0')
+            range.update('<p>original</p>')
+            range.prepend('<b>first</b>', 'cache')   // cache now holds <p>original</p>
+            const div = document.getElementById('prepend-guard')
+
+            for ( const bad of [ null, undefined, 0, false, {}, [], true ] ) {
+                expect ( () => range.prepend(bad) ).toThrow ( TypeError )
+            }
+            // Content and cache snapshot must be intact — bad input must
+            // not leak into the cache or pollute the DOM.
+            expect ( div.innerHTML ).toBe ( '<b>first</b><p>original</p>' )
+            range.back()
+            expect ( div.innerHTML ).toBe ( '<p>original</p>' )
+        })
+
     })
 
 
     describe ( 'Range API - append()', () => {
 
-        it ( 'should insert content after end marker', () => {
+        it ( 'should insert content at the end of the range (inside, before end marker)', () => {
             d.set(({ start, end }) => {
                 const div = document.createElement('div')
                 div.id = 'append-target'
@@ -428,6 +495,48 @@ describe ( 'Dim - DOM Invisible Markers', () => {
             range.append('<i>last</i>', 'cache')
 
             expect(() => range.back()).not.toThrow()
+        })
+
+
+        it ( 'append goes INSIDE the range, at the end — keeps existing content in order', () => {
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.id = 'append-inside'
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+            })
+
+            const range = d.get('0')
+            range.update('<span>middle</span>')
+            range.append('<i>tail</i>')
+
+            // Inside the range: <span>middle</span> <i>tail</i>
+            expect ( document.getElementById('append-inside').innerHTML )
+                .toBe ( '<span>middle</span><i>tail</i>' )
+        })
+
+
+        it ( 'throws TypeError on bad input — content and cache untouched', () => {
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.id = 'append-guard'
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+            })
+
+            const range = d.get('0')
+            range.update('<p>original</p>')
+            range.append('<i>last</i>', 'cache')     // cache holds <p>original</p>
+            const div = document.getElementById('append-guard')
+
+            for ( const bad of [ null, undefined, 0, false, {}, [], true ] ) {
+                expect ( () => range.append(bad) ).toThrow ( TypeError )
+            }
+            expect ( div.innerHTML ).toBe ( '<p>original</p><i>last</i>' )
+            range.back()
+            expect ( div.innerHTML ).toBe ( '<p>original</p>' )
         })
 
     })
@@ -709,11 +818,45 @@ describe ( 'Dim - DOM Invisible Markers', () => {
         expect ( d.get() ).toBeUndefined ()
         expect ( d.get(null) ).toBeUndefined ()
         expect ( d.get(undefined) ).toBeUndefined ()
-        expect ( d.get(0) ).toBeUndefined ()
-        expect ( d.get(42) ).toBeUndefined ()
         expect ( d.get({}) ).toBeUndefined ()
+        // Numeric input is now coerced to its string form, so a registered
+        // range is returned (covered in the numeric-id tests below).
+        expect ( d.get(42) ).toBeUndefined ()     // out-of-range numeric
         // (no .toThrow() — the fix is to NOT throw)
     }) // it BUG 2
+
+    it ( 'BUG 2 — get() accepts numeric IDs after registration', () => {
+        d.set(({ start, end }) => {
+            document.body.appendChild(start)
+            document.body.appendChild(end)
+            return 'named'
+        })
+        d.set(({ start, end }) => {
+            document.body.appendChild(start)
+            document.body.appendChild(end)
+        })
+
+        expect ( d.get(0) ).toBeDefined ()
+        expect ( d.get(1) ).toBeDefined ()
+        expect ( d.get(0) ).toBe ( d.get('0') )   // number and string alias the same entry
+        expect ( d.get(1) ).toBe ( d.get('1') )
+    }) // it BUG 2 — numeric IDs
+
+    it ( 'BUG 2 — get() accepts an array of mixed strings and numbers', () => {
+        d.set(({ start, end }) => {
+            document.body.appendChild(start)
+            document.body.appendChild(end)
+            return 'first'
+        })
+        d.set(({ start, end }) => {
+            document.body.appendChild(start)
+            document.body.appendChild(end)
+        })
+
+        const [byStr, byNum] = d.get(['first', 1])
+        expect ( byStr ).toBeDefined ()
+        expect ( byNum ).toBeDefined ()
+    }) // it BUG 2 — mixed array
 
     it ( 'BUG 2 — get() with empty array returns empty array', () => {
         expect ( d.get([]) ).to.deep.equal ( [] )
@@ -820,6 +963,772 @@ describe ( 'Dim - DOM Invisible Markers', () => {
             /* forgot start */
         }) ).toThrow ( /must attach both "start" and "end" markers/i )
     }) // it BUG 5
+
+
+
+    // =====================================================================
+    // Range API - select()
+    // =====================================================================
+
+    describe ( 'Range API - select()', () => {
+
+        it ( 'returns a DocumentFragment with the range contents', () => {
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+            })
+
+            const range = d.get('0')
+            range.update('<p>hello <b>world</b></p>')
+
+            const frag = range.select()
+            expect ( frag ).toBeInstanceOf ( DocumentFragment )
+            expect ( frag.querySelector('p') ).not.toBeNull ()
+            expect ( frag.querySelector('b').textContent ).toBe ( 'world' )
+        }) // it select() — basic
+
+
+        it ( 'disambiguates sibling regions under a common parent (the motivating use case)', () => {
+            const wrapper = document.createElement('div')
+            wrapper.id = 'shared-parent'
+            document.body.appendChild(wrapper)
+
+            let firstStart, firstEnd, secondStart, secondEnd
+
+            d.set(({ start, end }) => {
+                firstStart = start
+                firstEnd = end
+                const h = document.createElement('h2')
+                h.textContent = 'first'
+                wrapper.appendChild(start)
+                wrapper.appendChild(h)
+                wrapper.appendChild(end)
+                return 'first'
+            })
+            d.set(({ start, end }) => {
+                secondStart = start
+                secondEnd = end
+                const p = document.createElement('p')
+                p.textContent = 'second'
+                wrapper.appendChild(start)
+                wrapper.appendChild(p)
+                wrapper.appendChild(end)
+                return 'second'
+            })
+
+            const first  = d.get('first').select()
+            const second = d.get('second').select()
+
+            expect ( first.querySelector('h2').textContent ).toBe ( 'first' )
+            expect ( first.querySelector('p') ).toBeNull ()
+            expect ( second.querySelector('p').textContent ).toBe ( 'second' )
+            expect ( second.querySelector('h2') ).toBeNull ()
+        }) // it select() — sibling disambiguation
+
+
+        it ( 'mutating the returned fragment does not mutate the live DOM', () => {
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.id = 'iso'
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+            })
+
+            const range = d.get('0')
+            range.update('<span><a href="#">link</a> text</span>')
+
+            const frag = range.select()
+            frag.querySelectorAll('a').forEach(a => {
+                const parent = a.parentNode
+                while (a.firstChild) parent.insertBefore(a.firstChild, a)
+                parent.removeChild(a)
+            })
+
+            // Live DOM still contains the anchor
+            expect ( document.getElementById('iso').querySelector('a') ).not.toBeNull ()
+            // Fragment is anchor-free
+            expect ( frag.querySelector('a') ).toBeNull ()
+            expect ( frag.textContent ).toBe ( 'link text' )
+        }) // it select() — mutation isolation
+
+
+        it ( 'round-trips with update() — select, mutate, push back', () => {
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.id = 'roundtrip'
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+            })
+
+            const range = d.get('0')
+            range.update('<p>Hello <a href="#">World</a></p>')
+
+            const frag = range.select()
+            frag.querySelectorAll('a').forEach(a => {
+                const parent = a.parentNode
+                while (a.firstChild) parent.insertBefore(a.firstChild, a)
+                parent.removeChild(a)
+            })
+            range.update(frag)
+
+            const div = document.getElementById('roundtrip')
+            expect ( div.querySelector('a') ).toBeNull ()
+            expect ( div.textContent ).toBe ( 'Hello World' )
+        }) // it select() — round-trip
+
+
+        it ( 'returns an empty fragment for an empty range', () => {
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+            })
+
+            const frag = d.get('0').select()
+            expect ( frag ).toBeInstanceOf ( DocumentFragment )
+            expect ( frag.childNodes.length ).toBe ( 0 )
+        }) // it select() — empty
+
+
+        it ( 'returns null when the range is orphaned', () => {
+            let parentStart, parentEnd, childStart, childEnd
+
+            d.set(({ start, end }) => {
+                parentStart = start
+                parentEnd = end
+                const parent = document.createElement('div')
+                parent.appendChild(start)
+                parent.appendChild(end)
+                document.body.appendChild(parent)
+            })
+            d.set(({ start, end }) => {
+                childStart = start
+                childEnd = end
+                parentStart.after(start)
+                parentEnd.before(end)
+                return 'child'
+            })
+
+            const childRange = d.get('child')
+            d.get('0').update('')
+
+            expect ( childStart.isConnected ).toBe ( false )
+            expect ( childRange.select() ).toBeNull ()
+        }) // it select() — orphaned
+
+    }) // describe Range API - select()
+
+
+
+    // =====================================================================
+    // Range API - update() / prepend() / append() accepting Node
+    // =====================================================================
+
+    describe ( 'Range API - inserters accepting Node', () => {
+
+        it ( 'update() inserts a DocumentFragment without parsing HTML', () => {
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.id = 'frag-update'
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+            })
+
+            const frag = document.createDocumentFragment()
+            const span = document.createElement('span')
+            span.textContent = 'fragmented'
+            frag.appendChild(span)
+
+            d.get('0').update(frag)
+            expect ( document.getElementById('frag-update').querySelector('span').textContent )
+                .toBe ( 'fragmented' )
+        }) // it Node update
+
+
+        it ( 'prepend() accepts a DocumentFragment', () => {
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.id = 'frag-prepend'
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+            })
+
+            const frag = document.createDocumentFragment()
+            const b = document.createElement('b')
+            b.textContent = 'head'
+            frag.appendChild(b)
+
+            d.get('0').prepend(frag)
+            // div now: <start marker> <b>head</b> <end marker>
+            const div = document.getElementById('frag-prepend')
+            expect ( div.children[0].tagName ).toBe ( 'B' )
+            expect ( div.children[0].textContent ).toBe ( 'head' )
+        }) // it Node prepend
+
+
+        it ( 'append() accepts a DocumentFragment', () => {
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.id = 'frag-append'
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+            })
+
+            const frag = document.createDocumentFragment()
+            const i = document.createElement('i')
+            i.textContent = 'tail'
+            frag.appendChild(i)
+
+            d.get('0').append(frag)
+            // div now: <start marker> <end marker> <i>tail</i>
+            const div = document.getElementById('frag-append')
+            expect ( div.children[0].tagName ).toBe ( 'I' )
+            expect ( div.children[0].textContent ).toBe ( 'tail' )
+        }) // it Node append
+
+    }) // describe Range API - Node inserters
+
+
+
+    // =====================================================================
+    // Range API - extract()
+    // =====================================================================
+
+    describe ( 'Range API - extract()', () => {
+
+        it ( 'returns the removed content and empties the range', () => {
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.id = 'extract-target'
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+            })
+
+            const range = d.get('0')
+            range.update('<p>cut me</p>')
+
+            const frag = range.extract()
+            expect ( frag ).toBeInstanceOf ( DocumentFragment )
+            expect ( frag.querySelector('p').textContent ).toBe ( 'cut me' )
+            expect ( document.getElementById('extract-target').innerHTML ).toBe ( '' )
+            expect ( range.isEmpty() ).toBe ( true )
+        }) // it extract()
+
+
+        it ( 'extract("cache") enables undo via back()', () => {
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.id = 'extract-cache'
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+            })
+
+            const range = d.get('0')
+            range.update('<em>undoable</em>')
+            range.extract('cache')
+            range.back()
+
+            expect ( document.getElementById('extract-cache').innerHTML )
+                .toBe ( '<em>undoable</em>' )
+        }) // it extract() — cache
+
+
+        it ( 'returns null when orphaned', () => {
+            let parentStart, parentEnd
+            d.set(({ start, end }) => {
+                parentStart = start
+                parentEnd = end
+                const parent = document.createElement('div')
+                parent.appendChild(start)
+                parent.appendChild(end)
+                document.body.appendChild(parent)
+                return 'parent'
+            })
+            d.set(({ start, end }) => {
+                parentStart.after(start)
+                parentEnd.before(end)
+                return 'child'
+            })
+
+            const childRange = d.get('child')
+            d.get('parent').update('')
+
+            expect ( childRange.extract() ).toBeNull ()
+        }) // it extract() — orphaned
+
+
+        it ( 'extract() can move content from one range into another', () => {
+            d.set(({ start, end }) => {
+                const a = document.createElement('div')
+                a.id = 'src'
+                a.appendChild(start)
+                a.appendChild(end)
+                document.body.appendChild(a)
+                return 'src'
+            })
+            d.set(({ start, end }) => {
+                const b = document.createElement('div')
+                b.id = 'dst'
+                b.appendChild(start)
+                b.appendChild(end)
+                document.body.appendChild(b)
+                return 'dst'
+            })
+
+            const src = d.get('src')
+            const dst = d.get('dst')
+            src.update('<p>move me</p>')
+
+            const frag = src.extract()
+            dst.update(frag)
+
+            expect ( document.getElementById('src').innerHTML ).toBe ( '' )
+            expect ( document.getElementById('dst').innerHTML ).toBe ( '<p>move me</p>' )
+        }) // it extract() — cross-region move
+
+    }) // describe Range API - extract()
+
+
+
+    // =====================================================================
+    // Dim API - reset() — selective + marker removal
+    // =====================================================================
+
+    describe ( 'Dim API - reset() selective', () => {
+
+        it ( 'no-arg clears every range AND removes every marker from the DOM', () => {
+            const a = document.createElement('div')
+            const b = document.createElement('div')
+            a.id = 'reset-a'
+            b.id = 'reset-b'
+            document.body.appendChild(a)
+            document.body.appendChild(b)
+
+            d.set(({ start, end }) => {
+                a.appendChild(start)
+                a.appendChild(end)
+                return 'a'
+            })
+            d.set(({ start, end }) => {
+                b.appendChild(start)
+                b.appendChild(end)
+                return 'b'
+            })
+
+            d.reset()
+
+            // Registry gone
+            expect ( d.get('a') ).toBeUndefined ()
+            expect ( d.get('b') ).toBeUndefined ()
+            expect ( d.get(0) ).toBeUndefined ()
+            // Markers gone — wrappers are now truly empty
+            expect ( a.childNodes.length ).toBe ( 0 )
+            expect ( b.childNodes.length ).toBe ( 0 )
+        }) // it reset() — no-arg
+
+
+        it ( 'reset("alias") removes only that range', () => {
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'keep'
+            })
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'drop'
+            })
+
+            d.reset('drop')
+
+            expect ( d.has('keep') ).toBe ( true )
+            expect ( d.has('drop') ).toBe ( false )
+        }) // it reset() — single alias
+
+
+        it ( 'reset(0) clears by numeric index — the range\'s alias goes with it', () => {
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'dropped'
+            })
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'kept'
+            })
+
+            d.reset(0)
+
+            expect ( d.get(0) ).toBeUndefined ()
+            // The alias points at the SAME destroyed range — it must not
+            // survive and keep serving a dead range.
+            expect ( d.has('dropped') ).toBe ( false )
+            expect ( d.has('kept') ).toBe ( true )   // other range untouched
+        }) // it reset() — numeric
+
+
+        it ( 'reset("alias") also removes the range\'s numeric entry — no stale key remains', () => {
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'app'
+            })
+
+            d.reset('app')
+
+            // Before the fix: aliasMap['app'] was deleted but ranges['0']
+            // kept the destroyed range — has(0) was true, list() still
+            // showed '0', and get(0) returned a dead range API.
+            expect ( d.has(0) ).toBe ( false )
+            expect ( d.get(0) ).toBeUndefined ()
+            expect ( d.list() ).toEqual ( [] )
+        }) // it reset() — alias removes numeric entry
+
+
+        it ( 'set() after a selective reset() does not overwrite a live range (ids are monotonic)', () => {
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'a'
+            })
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+                return 'b'
+            })
+
+            d.reset(0)   // drop 'a' → numeric registry is { '1': b }
+
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+                return 'c'
+            })
+
+            // Before the fix: the next id was Object.keys(ranges).length = 1,
+            // so 'c' silently overwrote ranges['1'] and range 'b' became
+            // unreachable by index. Ids are now monotonic — 'c' gets '2'.
+            d.get('b').update('B-content')
+            expect ( d.get(1).toString() ).toBe ( 'B-content' )   // still range b
+            expect ( d.get(2) ).toBe ( d.get('c') )
+            expect ( d.list() ).toEqual ( ['b', 'c', '1', '2'] )
+        }) // it reset() — monotonic ids
+
+
+        it ( 'reset(["a", "b"]) and reset("a, b") accept multiple forms', () => {
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'a'
+            })
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'b'
+            })
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'c'
+            })
+
+            d.reset(['a', 'b'])
+
+            expect ( d.has('a') ).toBe ( false )
+            expect ( d.has('b') ).toBe ( false )
+            expect ( d.has('c') ).toBe ( true )
+        }) // it reset() — multiple
+
+
+        it ( 'reset("missing") is a no-op', () => {
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'a'
+            })
+
+            expect ( () => d.reset('nope') ).not.toThrow ()
+            expect ( d.has('a') ).toBe ( true )
+        }) // it reset() — missing
+
+
+        it ( 'reset(null) and reset({}) are silent no-ops (consistent with get/has)', () => {
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'a'
+            })
+
+            expect ( () => d.reset(null) ).not.toThrow ()
+            expect ( () => d.reset({}) ).not.toThrow ()
+            expect ( () => d.reset(true) ).not.toThrow ()
+            expect ( d.has('a') ).toBe ( true )   // nothing got cleared
+        }) // it reset() — bad input
+
+
+        it ( 'internal `destroy()` hook is non-enumerable (not part of the public API surface)', () => {
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'a'
+            })
+
+            const range = d.get('a')
+
+            // `destroy` must exist (reset() calls it) but must not appear in
+            // iteration of the range object — it is internal.
+            expect ( typeof range.destroy ).toBe ( 'function' )
+            expect ( Object.keys ( range ) ).not.toContain ( 'destroy' )
+            expect ( JSON.stringify ( Object.entries ( range ) ) )
+                .not.toMatch ( /destroy/ )
+        }) // it reset() — destroy non-enumerable
+
+    }) // describe Dim API - reset() selective
+
+
+
+    // =====================================================================
+    // Dim API - list() / aliases()
+    // =====================================================================
+
+    describe ( 'Dim API - list() and aliases()', () => {
+
+        it ( 'list() returns aliases first then numeric indexes, registration order', () => {
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'first-alias'
+            })
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+            })   // unnamed → only in numeric registry
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'second-alias'
+            })
+
+            const list = d.list()
+            // First the two aliases (in registration order), then the indexes
+            expect ( list ).toEqual ( ['first-alias', 'second-alias', '0', '1', '2'] )
+        }) // it list()
+
+
+        it ( 'aliases() returns only named keys, registration order', () => {
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'a'
+            })
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+            })
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'b'
+            })
+
+            expect ( d.aliases() ).toEqual ( ['a', 'b'] )
+        }) // it aliases()
+
+
+        it ( 'list() and aliases() return empty arrays when nothing is registered', () => {
+            expect ( d.list() ).toEqual ( [] )
+            expect ( d.aliases() ).toEqual ( [] )
+        }) // it list()/aliases() — empty
+
+    }) // describe Dim API - list() / aliases()
+
+
+
+    // =====================================================================
+    // Dim API - has()
+    // =====================================================================
+
+    describe ( 'Dim API - has()', () => {
+
+        it ( 'returns true for existing alias, false for missing', () => {
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'there'
+            })
+
+            expect ( d.has('there') ).toBe ( true )
+            expect ( d.has('missing') ).toBe ( false )
+        }) // it has()
+
+
+        it ( 'accepts numeric IDs', () => {
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+            })
+
+            expect ( d.has(0) ).toBe ( true )
+            expect ( d.has(42) ).toBe ( false )
+        }) // it has() — numeric
+
+
+        it ( 'returns true for array only if every entry exists', () => {
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+                return 'a'
+            })
+
+            expect ( d.has(['a']) ).toBe ( true )
+            expect ( d.has(['a', 'b']) ).toBe ( false )
+            expect ( d.has('a, b') ).toBe ( false )
+            expect ( d.has('a, a') ).toBe ( true )
+        }) // it has() — array
+
+
+        it ( 'returns false for invalid input types', () => {
+            expect ( d.has() ).toBe ( false )
+            expect ( d.has(null) ).toBe ( false )
+            expect ( d.has({}) ).toBe ( false )
+        }) // it has() — invalid input
+
+    }) // describe Dim API - has()
+
+
+
+    // =====================================================================
+    // Range API - isOrphan()
+    // =====================================================================
+
+    describe ( 'Range API - isOrphan()', () => {
+
+        it ( 'returns false when markers are connected', () => {
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+            })
+
+            expect ( d.get('0').isOrphan() ).toBe ( false )
+        }) // it isOrphan() — connected
+
+
+        it ( 'returns true after parent update orphans the child', () => {
+            let ps, pe
+            d.set(({ start, end }) => {
+                ps = start; pe = end
+                const p = document.createElement('div')
+                p.appendChild(start)
+                p.appendChild(end)
+                document.body.appendChild(p)
+            })
+            d.set(({ start, end }) => {
+                ps.after(start)
+                pe.before(end)
+                return 'child'
+            })
+
+            expect ( d.get('child').isOrphan() ).toBe ( false )
+            d.get('0').update('')
+            expect ( d.get('child').isOrphan() ).toBe ( true )
+        }) // it isOrphan() — after orphaning
+
+
+        it ( 'does not log a console.warn (unlike isEmpty/getContext)', () => {
+            let ps, pe
+            d.set(({ start, end }) => {
+                ps = start; pe = end
+                const p = document.createElement('div')
+                p.appendChild(start)
+                p.appendChild(end)
+                document.body.appendChild(p)
+            })
+            d.set(({ start, end }) => {
+                ps.after(start)
+                pe.before(end)
+                return 'child'
+            })
+
+            const warnings = []
+            const orig = console.warn
+            console.warn = ( msg ) => { warnings.push ( msg ) }
+            try { d.get('child').isOrphan() } finally { console.warn = orig }
+
+            expect ( warnings.length ).toBe ( 0 )
+        }) // it isOrphan() — silent
+
+    }) // describe Range API - isOrphan()
+
+
+
+    // =====================================================================
+    // Range API - toString()
+    // =====================================================================
+
+    describe ( 'Range API - toString()', () => {
+
+        it ( 'returns the plain-text content of the range', () => {
+            d.set(({ start, end }) => {
+                const div = document.createElement('div')
+                div.appendChild(start)
+                div.appendChild(end)
+                document.body.appendChild(div)
+            })
+
+            const range = d.get('0')
+            range.update('<p>hello <b>world</b></p>')
+
+            expect ( range.toString() ).toBe ( 'hello world' )
+        }) // it toString()
+
+
+        it ( 'returns empty string for an empty range', () => {
+            d.set(({ start, end }) => {
+                document.body.appendChild(start)
+                document.body.appendChild(end)
+            })
+
+            expect ( d.get('0').toString() ).toBe ( '' )
+        }) // it toString() — empty
+
+
+        it ( 'returns empty string when orphaned', () => {
+            let ps, pe
+            d.set(({ start, end }) => {
+                ps = start; pe = end
+                const p = document.createElement('div')
+                p.appendChild(start)
+                p.appendChild(end)
+                document.body.appendChild(p)
+            })
+            d.set(({ start, end }) => {
+                ps.after(start)
+                pe.before(end)
+                return 'child'
+            })
+
+            d.get('0').update('')
+            expect ( d.get('child').toString() ).toBe ( '' )
+        }) // it toString() — orphaned
+
+    }) // describe Range API - toString()
 
 
 }) // describe
