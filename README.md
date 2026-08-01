@@ -1,5 +1,10 @@
 # Dim (@peter.naydenov/dim)
 
+[![npm version](https://img.shields.io/npm/v/@peter.naydenov/dim.svg)](https://www.npmjs.com/package/@peter.naydenov/dim)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript types](https://img.shields.io/badge/types-included-3178c6.svg)](https://www.typescriptlang.org)
+[![Bundle size](https://img.shields.io/bundlephobia/minzip/@peter.naydenov/dim)](https://bundlephobia.com/package/@peter.naydenov/dim)
+
 DIM (DOM Invisible Markers) is a library that creates invisible markers in the DOM so you can define ranges, insert content into them, and replace or restore that content later — without leaving any trace of the markers themselves.
 
 
