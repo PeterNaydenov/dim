@@ -11,7 +11,10 @@ export default defineConfig ({
     },
     rollupOptions: {
       output: {
-        exports: 'named',
+        // Source uses `export default dim` only — Rollup infers the
+        // correct output shape (`exports.default = …` for CJS,
+        // `export { … as default }` for ESM). No explicit `exports`
+        // setting needed.
         globals: { global: 'global' }
       }
     },
