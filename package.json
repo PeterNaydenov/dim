@@ -70,11 +70,11 @@
   },
   "devDependencies": {
     "@typescript/typescript6": "^6.0.2",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.11",
     "jsdom": "^30.0.1",
     "typescript": "^7.0.2",
     "vite": "^8.2.1",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "allowScripts": {
     "fsevents@2.3.3": true
