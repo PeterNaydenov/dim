@@ -82,7 +82,7 @@ function o(e, t, n) {
 			r = [];
 		},
 		getContext: () => s() ? e.commonAncestorContainer : null,
-		isEmpty: () => s() ? (o(), e.collapsed) : !0,
+		isEmpty: () => !s() || (o(), e.collapsed),
 		delete: (t = "") => {
 			s() && (o(), t === "cache" && r.push(e.cloneContents()), e.deleteContents());
 		},
