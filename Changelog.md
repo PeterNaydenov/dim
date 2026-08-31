@@ -2,6 +2,11 @@
 
 
 
+### 1.1.0 ( 2026-09-01 )
+- [x] Feature: Added a skill at `.agents/skills/git-dim/SKILL.md`;
+
+
+
 ### 1.0.0 ( 2026-08-01 )
 - [x] **New API — `range.select()`**: returns a deep clone of the range contents as a `DocumentFragment`. The fragment is detached from the live DOM and safe to mutate — pair it with `update(fragment)` for a round-trip (read → mutate → write back). Solves the "multiple sibling regions under a common parent" case without relying on `window.getSelection()`. Returns `null` when the range is orphaned;
 - [x] **New API — `range.extract(keepCache?)`**: like `delete()` but returns the removed content as a `DocumentFragment` first, so the caller can re-insert it elsewhere. Pass `'cache'` to keep the snapshot in the undo stack so `back()` can restore it. Returns `null` when orphaned;
