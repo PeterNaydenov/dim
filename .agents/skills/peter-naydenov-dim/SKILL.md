@@ -8,10 +8,10 @@ description: |
   placeholder that gets replaced", or any feature built on dim's marker
   and Range API. Triggers on phrases like "use dim", "dim markers", "invisible
   marker", "DOM range slot", "@peter.naydenov/dim". Do NOT confuse with
-  `@peter.naydenov/morph` (DOM diffing / template engine with `create` /
-  `html\`\`` / `mount` API) — that is a different library by the same author
-  with a different API surface. Also do NOT use for full-page rendering,
-  server-side rendering, or any other DOM library.
+  `@peter.naydenov/morph` (a string template engine — it renders templates
+  + data into HTML strings and does not touch the DOM) — that is a different
+  library by the same author with a different API surface. Also do NOT use
+  for full-page rendering, server-side rendering, or any other DOM library.
 ---
 
 # peter.naydenov/dim

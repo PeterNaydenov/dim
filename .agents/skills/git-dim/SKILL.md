@@ -7,9 +7,10 @@ description: |
   `prepend` / `append` / `delete`, undo with `back`, and clean up with
   `reset`. Use when a developer asks for invisible DOM markers,
   range-based content replacement, in-place editing, hot-swap regions,
-  or "undo for a specific DOM area". Do NOT use for: a virtual DOM
-  diffing library (that's `@peter.naydenov/morph`), a full
-  framework-agnostic UI library, or fixing bugs in `dim` itself.
+  or "undo for a specific DOM area". Do NOT use for: a string
+  template engine (that's `@peter.naydenov/morph`), a virtual DOM
+  diffing library, a full framework-agnostic UI library, or fixing
+  bugs in `dim` itself.
 ---
 
 # git-dim helper
@@ -65,7 +66,7 @@ Source of truth:
    - **Range drift across operations was fixed internally** — the range's start/end are re-anchored before each mutating call. Users don't have to do anything; this is just FYI for users coming from pre-1.0.0 where orphan detection was effectively broken.
    - **`get` / `has` / `reset` are silent no-ops on bad input** (return `undefined` / `false` / nothing). They never throw. This is intentional, but if the user expected an error for a typo'd alias, point them at `d.list()` to discover what exists.
 
-5. **If the request is for a virtual DOM diffing / declarative UI library**, this is the wrong layer. `dim` is imperative — you call `.update(...)` yourself, it doesn't react to state. Point the user at `@peter.naydenov/morph` (template engine) or `@peter.naydenov/signals` (reactive state) for that.
+5. **If the request is for a virtual DOM diffing / declarative UI library**, this is the wrong layer. `dim` is imperative — you call `.update(...)` yourself, it doesn't react to state. Neither `dim` nor `@peter.naydenov/morph` is a DOM-diffing library. If the user needs to build the HTML from templates + data, point at `@peter.naydenov/morph` (string template engine — its output string can be passed to `.update(...)`); for reactive state, point at `@peter.naydenov/signals`.
 
 6. **If the request is for a selection-based API** (read the user's current text selection, capture the browser's `getSelection()`), `dim` does not provide that. `dim` ranges are stored on the bus, not driven by the user's pointer. For browser selection, use the platform `window.getSelection()` directly.
 

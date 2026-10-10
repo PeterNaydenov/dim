@@ -50,10 +50,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "build:types": "tsc && node scripts/make-cts.js",
+    "build:types": "tsc6 && node scripts/make-cts.js",
     "build:js": "vite build",
     "build": "npm run build:js && npm run build:types",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc6 --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "cover": "vitest run --coverage",
