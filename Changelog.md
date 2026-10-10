@@ -1,6 +1,11 @@
 # Release History
 
 
+### 1.1.1 ( 2026-10-10 )
+- [x] Fix for types;
+- [x] Fix in skill. Wrong description for 'morph';
+
+
 
 ### 1.1.0 ( 2026-09-01 )
 - [x] Feature: Added a skill at `.agents/skills/git-dim/SKILL.md`;
